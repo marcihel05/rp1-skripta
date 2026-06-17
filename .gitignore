@@ -1,0 +1,8 @@
+.venv/
+_minted-main/
+
+*.pdf
+*.log
+*.aux
+*.out
+*.toc

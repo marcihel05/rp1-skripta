@@ -1,0 +1,242 @@
+\documentclass[12pt,openany]{book}
+
+% --------------------
+% ENCODING I JEZIK
+% --------------------
+
+\usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc} - zakomentirao jer navodno je danas to default
+\usepackage[croatian]{babel}
+
+% --------------------
+% FONTOVI I TIPOGRAFIJA
+% --------------------
+
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+
+% --------------------
+% RAZNI PAKETI
+% --------------------
+
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{tocloft}
+
+
+% --------------------
+% IZGLED STRANICE
+% --------------------
+
+\usepackage[a4paper,
+            left=3cm,
+            right=2.5cm,
+            top=3cm,
+            bottom=3cm]{geometry}
+
+\raggedbottom % ne mora se truditi uvijek sve rastezati na stranici
+
+\usepackage{setspace}
+\onehalfspacing
+
+% --------------------
+% SLIKE
+% --------------------
+
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% --------------------
+% NASLOVI POGLAVLJA
+% --------------------
+
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]
+{\normalfont\bfseries\Huge}
+{\filleft\Huge\chaptername\ \thechapter}
+{2ex}
+{\titlerule\vspace{2ex}\filright}
+[\vspace{1ex}\titlerule]
+
+% ----------------
+% HEADER / FOOTER
+% ----------------
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{15pt}
+
+% --------------------
+% PROGRAMSKI KOD
+% --------------------
+
+\usepackage{minted}
+\definecolor{codebg}{RGB}{248,248,248}
+
+\setminted{
+    bgcolor=codebg,
+    fontsize=\normalsize,
+    linenos,
+    breaklines,
+    frame=single,
+    framesep=3mm,
+    autogobble
+}
+
+% --------------------
+% ZADACI, RJEŠENJA I PITANJA ZA RAZMIŠLJANJE
+% --------------------
+
+\newcounter{zadatak}[chapter]
+\renewcommand{\thezadatak}{\thechapter.\arabic{zadatak}}
+
+\newtcolorbox{zadatak}[1][]{
+    enhanced,
+    breakable,
+    colback=white,
+    colframe=blue!70!black,
+    borderline west={2pt}{0pt}{blue!70!black},
+    boxrule=0pt,
+    sharp corners,
+    fonttitle=\bfseries,
+    title=Zadatak~\refstepcounter{zadatak}\thezadatak,
+    #1
+}
+
+\newtcolorbox{rjesenje}{
+    enhanced,
+    breakable,
+    colback=green!2,
+    colframe=green!50!black,
+    borderline west={2pt}{0pt}{green!50!black},
+    boxrule=0pt,
+    sharp corners,
+    title=Rješenje,
+    fonttitle=\bfseries
+}
+
+
+\newtcolorbox{razmisljanje}{
+    enhanced,
+    breakable,
+    colback=orange!2,
+    colframe=orange!50!black,
+    borderline west={2pt}{0pt}{orange!50!black},
+    boxrule=0pt,
+    sharp corners,
+    title=Pitanja za razmišljanje,
+    fonttitle=\bfseries
+}
+
+
+% --------------------
+% SAVJET, NAPOMENA I GREŠKA
+% --------------------
+
+
+\newtcolorbox{savjet}{
+    enhanced,
+    breakable,
+    colback=cyan!2,
+    colframe=cyan!60!black,
+    borderline west={2pt}{0pt}{cyan!60!black},
+    boxrule=0pt,
+    sharp corners,
+    title=Savjet,
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{napomena}{
+    enhanced,
+    breakable,
+    colback=gray!5,
+    colframe=gray!60!black,
+    borderline west={2pt}{0pt}{gray!60!black},
+    boxrule=0pt,
+    sharp corners,
+    title=Napomena,
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{greska}{
+    enhanced,
+    breakable,
+    colback=red!2,
+    colframe=red!60!black,
+    borderline west={2pt}{0pt}{red!60!black},
+    boxrule=0pt,
+    sharp corners,
+    title=Česta pogreška,
+    fonttitle=\bfseries
+}
+
+% --------------------
+% ISKLJUČENO UVLAČENJE
+% --------------------
+
+\setlength{\parindent}{0pt}
+
+
+% --------------------
+% LINKOVI
+% --------------------
+
+\usepackage[hidelinks]{hyperref}
+
+
+% --------------------
+% DOKUMENT
+% --------------------
+
+\begin{document}
+
+% --------------------
+% NASLOVNICA
+% --------------------
+
+\input{frontmatter/naslovnica}
+
+% --------------------
+% PREDNJI DIO
+% --------------------
+
+\frontmatter
+
+\input{frontmatter/predgovor}
+
+\tableofcontents
+
+% --------------------
+% GLAVNI DIO
+% --------------------
+
+\mainmatter
+
+\input{chapters/01_uvod}
+\input{chapters/02_osnove}
+\input{chapters/03_strukture}
+\input{chapters/04_string}
+\input{chapters/05_copy_kon}
+\input{chapters/06_genericko}
+\input{chapters/07_stl}
+\input{chapters/08_naprednije_znacajke}
+\input{chapters/09_objektno_programiranje}
+\input{chapters/10_napredno_objektno}
+\input{chapters/11_friend_i_operatori}
+\input{chapters/12_funktori}
+
+% --------------------
+% LITERATURA
+% --------------------
+
+% \bibliographystyle{plain}
+% \bibliography{bibliography/literatura}
+
+\end{document}

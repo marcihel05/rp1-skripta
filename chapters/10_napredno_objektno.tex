@@ -1,0 +1,788 @@
+\chapter{Napredni koncepti objektno orijentiranog programiranja}
+
+
+\section{Statički članovi klasa}
+
+Uobičajeni članovi klase pripadaju svakom objektu zasebno. 
+Primjerice, svaki objekt sljedeće klase
+\begin{minted}{C++}
+class Duznik {
+    double iznos, tecaj;
+};
+\end{minted}
+ima vlastitu kopiju člana \texttt{iznos} i \texttt{tecaj}.
+Međutim, ponekad želimo da podatak bude zajednički svim objektima određene klase. 
+U takvim situacijama koristimo \textbf{statičke članove klase} (engl.\ \textit{static members}).
+Statički član deklarira se pomoću ključne riječi 
+\texttt{static}. 
+Za razliku od običnih članova, postoji samo jedna njegova kopija u memoriji, neovisno o broju stvorenih objekata.
+Ako izmijenimo klasu \texttt{Duznik} iz gornjeg primjera
+na sljedeći način:
+\begin{minted}{C++}
+class Duznik {
+    double iznos;
+    static double tecaj;
+};
+\end{minted}
+tada za sve objekte tipa \texttt{Duznik}
+postoji samo jedan \texttt{tecaj}
+(neovisno o broju stvorenih objekata tipa \texttt{Duznik},
+uključujući i slučaj kada nije stvoren niti jedan objekt tog tipa).
+Iako nisu dijelovi pojedinih objekata, možemo preko njih
+pristupati statičkim članovima pripadne klase.
+Primjerice, ako izmijenimo kod klase \texttt{Duznik} tako da \texttt{tecaj}
+bude deklariran kao javan
+(a ne privatan) dio klase,
+obje sljedeće upotrebe tečaja su ispravne:
+\begin{minted}{C++}
+Duznik::tecaj = 0.95;
+Duznik duznik;
+duznik.tecaj = 0.99;
+\end{minted}
+\medskip
+
+Budući da statički član ne pripada pojedinom objektu nego cijeloj klasi, potrebno ga je definirati izvan klase.
+Primjerice, za klasu \texttt{Duznik} iz primjera to bismo 
+mogli napraviti ovako:
+\begin{minted}{C++}
+double Duznik::tecaj = 1.56;
+\end{minted}
+
+Klasa može sadržavati i \textbf{statičke funkcije}. 
+Takve funkcije deklariraju se s ključnom riječi \texttt{static}
+te također pripadaju klasi, a ne pojedinom objektu.
+Zbog toga statička funkcija može pristupati samo statičkim članovima klase.
+
+
+\begin{zadatak}\label{zad:racuni-static}
+    Izmijenite klasu \texttt{Racun} iz zadatka \ref{zad:racuni}
+    tako da član klase koji se odnosi na tečaj ne pripada pojedinom
+    računu nego postoji samo jedan za sve račune.
+    Kako bi se podatak o tečaju (kojem korisnik nema pristup jer 
+    je on privatan) mogao mijenjati izvan klase,
+    dodajte u sučelje klase metodu
+    \texttt{void promijeni(double novi\_tecaj)}.
+    Ta metoda postavlja vrijednost tečaja na
+    vrijednost \texttt{novi\_tecaj}
+    samo ako je ta vrijednost u intervalu 
+    $[0.9,1]$.
+
+    Napišite i primjer programa za testiranje koji
+    treba postaviti vrijednost tečaja 
+    i prije deklaracije bilo kojeg objekta tipa \texttt{Racun}.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Postavimo \texttt{tecaj} kao statički član klase \texttt{Racun}
+    te deklariramo javnu statičku metodu \texttt{promijeni}:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Racun {
+private:
+    std::string ime;
+    double iznos;
+    static double tecaj;
+    double pretvori();
+public:
+    Racun(double, std::string im = "nepoznat");
+    void info();
+    static void promijeni(double);
+};
+\end{minted}
+Pritom smo izmijenili i konstruktor klase koji sada više ne treba primiti vrijednost tečaja obzirom da on ne pripada
+    pojedinom objektu koji se konstruira.
+Izmijenimo prema tome implementaciju konstruktora klase u \textit{Racun.cpp} datoteci na sljedeći način:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+Racun::Racun(double iz, std::string im)
+    : ime(im), iznos(iz) {}
+\end{minted}
+Kako tečaj sad nije dio pojedinog računa pa
+nije definiran kad konstruiramo neki račun,
+definiramo ga i inicijaliziramo izvan klase,
+u \textit{Racun.cpp} datoteci:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+double Racun::tecaj = 0.94;
+\end{minted}
+Ovdje smo vrijednost $0.94$ odabrali na slučajan način.
+\medskip
+
+Preostaje još implementirati statičku metodu \texttt{promijeni} u \textit{Racun.cpp} datoteci:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void Racun::promijeni(double novi) {
+    if(novi >= 0.9 && novi <= 1)
+        tecaj = novi;
+}
+\end{minted}
+Uočite da u gornjem kodu nismo ponovo navodili ključnu riječ \texttt{static}.
+\medskip
+
+Primjer traženog programa za testiranje:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+Racun::promijeni(0.99);
+Racun r1(100.99,"John"), r2(123.23);
+r1.promijeni(0.95); // ili Racun::promijeni(0.95);
+r1.info();
+r2.info();
+\end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        Objasnite na primjeru programa za testiranje iz
+        rješenja prethodnog zadatka,
+        do kojeg problema bi došlo kada bismo metodu \texttt{promijeni}
+        deklarirali kao nestatičku metodu klase \texttt{Racun}.
+        
+        \item 
+        Ako je poznato da se objekti mogu definirati samo jednom, 
+        obrazložite zašto definiciju i inicijalizaciju
+        tečaja:
+        \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+double Racun::tecaj = 0.94;
+\end{minted}
+    nismo mogli umjesto u \texttt{Racun.cpp} datoteku
+    staviti u \texttt{Racun.h} datoteku.
+
+    \item 
+    Objasnite zašto sljedeća verzija implementacije metode \texttt{promijeni}
+    klase \texttt{Racun} iz prethodnog zadatka nije ispravna
+    (u smislu da je nije moguće kompajlirati):
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void Racun::promijeni(double novi) {
+    cout << iznos;
+    if(novi >= 0.9 && novi <= 1)
+        tecaj = novi;
+}
+    \end{minted}
+\end{enumerate}
+\end{razmisljanje}
+
+
+
+Upotrebom statičkih članova klase možemo u svakom trenutku
+imati evidenciju ukupnog broja objekata tipa te klase
+koji postoje u programu.
+
+
+\begin{zadatak}\label{zad:racuni-ukupno}
+    Izmijeniti klasu \texttt{Racun} iz zadatka \ref{zad:racuni-static}
+    tako da klasa ima član koji sadrži podatak
+    o trenutnom ukupnom broju objekata te klase u programu.
+    Kako bi korisnik mogao dobiti podatak o tome broju,
+    dodati klasi metodu naziva \texttt{koliko}
+    koja vraća korisniku traženi broj.
+    Napišite i program za testiranje koji sadrži 
+    (globalnu) funkciju
+    \texttt{void funkcija(Racun r)}
+    koja ispisuje podatke o računu \texttt{r}
+    i ukupan broj računa u trenutku izvršavanja te funkcije.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Dodamo klasi \texttt{Racun} privatan statički brojač.
+    Važno je da je taj brojač privitan kako korisnik
+    ne bi (ne)namjerno mogao izravno promijeniti njegovu vrijednosti.
+    Također dodajemo statičku metodu \texttt{static int koliko()}
+    za dohvat vrijednosti brojača u sučelju.
+    Vrijednost brojača povećavat ćemo u konstruktoru i konstruktoru kopiranjem obzirom da 
+    se pomoću njih stvaraju novi računi
+    (i novi računi koji su kopije postojećih računa),
+    a smanjivati u destruktoru (jer tada nestaju računi).
+    Prema tome, dodajemo još i konstruktor kopiranjem i destruktor.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Racun {
+private:
+    static int broj_racuna;
+    ...
+public:
+    static int koliko();
+    Racun(const Racun&);
+    ~Racun();
+    ...
+};
+    \end{minted}
+U datoteku \textit{Racun.cpp} dodajemo definiciju brojača
+(obzirom da je on statički član klase)
+te ga početno inicijaliziramo na $0$.
+U konstruktoru dodajemo povećavanje brojača,
+te dodajemo konstruktor kopiranjem i destruktor koji povećavaju ili smanjuju brojač.
+Naposlijetku dodajemo i implementaciju metode za dohvat vrijednosti brojača.
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+int Racun::broj_racuna = 0;
+
+Racun::Racun(double iz, std::string im)
+    : ime(im), iznos(iz) {
+        ++broj_racuna;
+}
+
+Racun::Racun(const Racun& r)
+    : ime(r.ime), iznos(r.iznos) {
+        ++broj_racuna;
+}
+
+Racun::~Racun() {
+    --broj_racuna;
+}
+
+int Racun::koliko() {
+    return broj_racuna;
+}
+\end{minted}
+
+Sadržaja datoteke \texttt{main.cpp} s 
+primjerom traženog programa za testiranje:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <iostream>
+#include "Racun.h"
+
+using namespace std;
+
+void funkcija(Racun r) {
+    r.info();
+    cout << r.koliko() << endl;
+}
+
+int main(void) {
+    cout << Racun::koliko() << endl;
+    Racun::promijeni(0.99);
+    Racun r1(100.99,"John"), r2(123.23);
+    r1.promijeni(0.95);
+    funkcija(r1);
+    funkcija(r2);
+    cout << Racun::koliko() << endl;
+    return 0;
+}
+\end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item
+        Što biste izmijenili u rješenju prethodnog zadatka
+        kako bi imali evidenciju i o ukupnom broju
+        objekata tipa \texttt{Racun}
+        koji su stvoreni kao kopije nekog drugog objekta
+        tog tipa?
+        Kako biste u destruktoru znali kad se uništava 
+        takva kopija od uništavanja računa koji nije nastao kao kopija?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\section{\texttt{this} pokazivač}
+
+Funkcije članice klase pristupaju objektu tipa te klase
+na kojem su pozvane kroz dodatan implicitan parametar koji se naziva \texttt{\textbf{this}}.
+Pri pozivu funkcije, pokazivač \texttt{this} inicijalizira se
+adresom objekta na kojem je funkcija pozvana.
+\medskip
+
+Primjerice, promotrimo metodu \texttt{info} klase \texttt{Racun} iz zadatka \ref{zad:racuni}:
+\begin{minted}{C++}
+void Racun::info() {
+    cout << ime << endl
+         << '\t' << iznos << "EUR" << endl
+         << '\t' << pretvori() << "CHF" << endl;
+}
+\end{minted}
+Pri pozivu te metode u sljedećem kodu
+\begin{minted}{C++}
+Racun jedan_racun(100);
+jedan_racun.info();
+\end{minted}
+\texttt{this} pokazivač koji možemo koristiti unutar
+metode \texttt{Racun::info} sadrži adresu objekta \texttt{jedan\_racun},
+dok dereferenciranjem tog pokazivača,
+tj.\ izrazom \texttt{*this},
+dobivamo upravo objekt \texttt{jedan\_racun}.
+
+Prema tome, našu metodu \texttt{info} mogli smo napisati i ovako
+(dobiva se potpuno ista metoda):
+\begin{minted}{C++}
+void Racun::info() {
+    cout << this->ime << endl
+         << '\t' << this->iznos << "EUR" << endl
+         << '\t' << this->pretvori() << "CHF" << endl;
+}
+\end{minted}
+
+\texttt{this} parametar metode za nas je definiran implicitno.
+Drugim riječima,
+poziv metode izrazom 
+\texttt{jedan\_racun.info();} i gornju metodu \texttt{info} kompajler kao da prevede u
+\begin{center}
+    \texttt{Racun::info(\&jedan\_racun);}
+\end{center}
+i
+\begin{center}
+    \texttt{void Racun::info(Racun* const this) \{...\}}
+\end{center}
+
+
+
+
+\section{\texttt{const} objekti, pokazivači, reference
+i funkcije članice}
+
+
+Ako želimo definirati varijablu čija se vrijednost nakon inicijalizacije ne može mijenjati (ni namjerno ni slučajno tijekom izvođenja programa), prilikom deklaracije koristimo ključnu riječ \texttt{const}.
+Obzirom da se vrijednost takve varijable nakon inicijalizacije ne može
+mijenjati, ona mora biti inicijalizirana.
+Primjerice, ako deklariramo
+\begin{minted}{C++}
+const double t = 7.5345;
+\end{minted}
+tada možemo, primjerice, ispisati vrijednost te varijable
+pomoću izraza \texttt{cout <\!< t}
+ali joj ne možemo tu vrijednost promijeniti pomoću izraza \texttt{t *= 2}.
+\medskip
+
+Ključna riječ \texttt{const} može se koristiti i prilikom stvaranja objekata klase. 
+Nakon inicijalizacije takvih objekata nije dopušteno mijenjati vrijednosti njihovih članova.
+Primjerice, možemo napisati
+\begin{minted}{C++}
+const Racun primjer(100,"test");
+\end{minted}
+No, ne možemo funkciji koja prima ne-\texttt{const} pokazivač ili 
+ne-\texttt{const} referencu
+na račun, poput funkcije s prototipom
+\begin{minted}{C++}
+bool jel_bogat(Racun& racun);
+\end{minted}
+proslijediti adresu računa ili račun \texttt{primjer}
+jer bi ta funkcija mogla preko pokazivača
+ili reference pokušati promijeniti taj račun
+(što predstavlja grešku obzirom da je \texttt{primjer} označen sa \texttt{const}).
+Stoga je potrebno koristiti pokazivač koji pokazuje na \texttt{const}
+ili \texttt{const} referencu.
+U našem primjeru, funkciju \texttt{jel\_bogat}
+izmijenili bismo tako da ima sljedeći prototip:
+\begin{minted}{C++}
+bool jel_bogat(const Racun& racun);
+\end{minted}
+Drugim riječima, funkcija time jamči da neće mijenjati objekt na koji 
+pokazuje ili koji referencira \texttt{racun}.
+Također, u toj funkciji na takvim objektom ne mogu se
+pozivati druge funkcije ili metode koje ne jamče da se takav objekt neće pokušati promijeniti.
+Istaknimo da se takvim funkcijama i metodama mogu prosljeđivati
+objekti ili pokazivači na objekte koji nisu označeni sa \texttt{const}
+jer upotreba \texttt{const} u funkcijama i metodama koju
+smo opisali samo jamči da ih funkcija ili metoda neće mijenjati
+(oni se i dalje mogu mijenjati na druge načine).
+\medskip
+
+Metode koje pozivamo nad objektom označenim sa \texttt{const},
+također moraju jamčiti da neće pokušati promijeniti taj objekt.
+Primjerice,
+kako bi za račun \texttt{primjer} iz gornjeg primjera napravili poziv neke metode \texttt{zbroji}, poput
+\begin{minted}{C++}
+double zbroj = primjer.zbroji();
+\end{minted}
+potrebno je iza liste parametara metode dodati
+(i u deklaraciji i pri implementaciji metode) ključnu riječ \texttt{const}:
+\begin{minted}{C++}
+double primjer() const;
+\end{minted}
+Dodavanjem \texttt{const} na kraj metode implicitni pokazivač \texttt{this} postaje tipa 
+\begin{center}
+    \texttt{const Racun* const this}
+\end{center}
+(čitajući zdesna nalijevo: \texttt{this} je konstantni
+pokazivač na konstantni objekt klase \texttt{Racun}, tj.\ ne može se promijeniti da pokazuje na neki drugi objekt
+te objekt na koji pokazuje nije moguće promijeniti). 
+Time metoda jamči da se objekt koji tu metodu koristi neće pokušati mijenjati.
+
+
+\begin{savjet}
+U pravilu je dobro stavljati \texttt{const} za svaki argument
+funkcije i metode za koji znamo da ga funkcija ili metoda ne treba mijenjati. 
+To se naziva \textit{const-correctness} i smatra se dobrom praksom u programiranju.
+Tako da ćemo u nastavku pokušati pri pisanju funkcija i metoda što više koristiti \texttt{const}
+(na mjestima gdje je to moguće).
+\end{savjet}
+
+
+\begin{zadatak}
+    Izmijeniti klasu \texttt{Racun} te (globalnu) funkciju \texttt{funkcija}
+    iz rješenja zadatka \ref{zad:racuni-ukupno}:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void funkcija(Racun r) {
+    r.info();
+    cout << r.koliko() << endl;
+}
+    \end{minted}
+    tako da ta funkcija upotrebom pokazivača ne dovodi niti do jednog kopiranja
+    nekog objekta tipa \texttt{Racun}
+    te da se sljedeći kod (primjerice, u \texttt{main} funkciji) uspješno kompajlira:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+const Racun primjer(100,"test");
+funkcija(&primjer);
+    \end{minted}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Izmijenimo funkciju \texttt{funkcija} tako da joj je argument pokazivač i 
+    to pokazivač na \texttt{const} objekt
+    (kako bi mogli imati poziv funkcije i za \texttt{const} objekte kao što je
+    objekt \texttt{primjer} iz teksta zadatka):
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void funkcija(const Racun * r) {
+    r -> info();
+    cout << r -> koliko() << endl;
+}
+\end{minted}
+
+Budući da je parametar \texttt{r} tipa \texttt{const Racun*}, 
+preko njega mogu se pozivati samo metode označene s \texttt{const}. 
+Prema tome potrebno je dodati \texttt{const}
+iza liste parametara metode \texttt{info}
+kako bi naznačili da ona neće pokušati promijeniti objekt nad kojim se poziva (u ovom slučaju, 
+objekt na koji pokazuje pokazivač \texttt{r}).
+Dodamo \texttt{const} u \textit{Racun.h} datoteci pri deklaraciji \texttt{info} metode:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void info() const ;
+\end{minted}
+te u \textit{Racun.cpp} datoteci pri implementaciji te metode:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void Racun::info() const {
+    cout << ime << endl
+         << '\t' << iznos << "EUR" << endl
+         << '\t' << pretvori() << "CHF" << endl;
+}
+\end{minted}
+Budući da je sada \texttt{info} konstantna metoda, 
+unutar nje se mogu pozivati samo konstante metode. 
+Zato i \texttt{pretvori} mora biti deklarirana s \texttt{const} 
+(što je u redu jer niti ne želimo da ona mijenja objekt nad kojim se poziva).
+Dodamo \texttt{const} u \textit{Racun.h} datoteci pri deklaraciji \texttt{pretvori} metode:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+double pretvori() const ;
+\end{minted}
+te u \textit{Racun.cpp} datoteci pri implementaciji te metode:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+double Racun::pretvori() const {
+    return iznos * tecaj;
+}
+\end{minted}
+Istaknimo da funkcija \texttt{funkcija}
+koristi poziv statičke metode \texttt{koliko}
+koju ne moramo mijenjati.
+To je zato što statičke funkcije članice ne pripadaju pojedinom
+objektu tipa klase pa nemaju implicitno \texttt{this} pokazivač. 
+Prema tome se niti ne mogu deklarirati kao \texttt{const} (niti koristiti \texttt{this} pokazivač u svojoj
+implementaciji).
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        Zašto se sljedeći kod
+        \begin{minted}{C++}
+const Racun primjer(100,"test");
+funkcija(primjer);
+        \end{minted}
+        uspješno kompajlira ako ne promijenimo funkciju \texttt{funkcija}
+        nego ona ostane ista kao u rješenju zadatka \ref{zad:racuni-ukupno}? 
+        \item 
+        Obrazložite zašto se sljedeći kod uspješno kompajlira:
+        \begin{minted}{C++}
+void funkcija(const Racun *r) {
+    Racun novi(1.23,"abc");
+    r = &novi;
+    r -> info();
+    cout << r -> koliko() << endl;
+}
+    \end{minted}
+
+    \item 
+    Obrazložite zbog koje se dvije linije sljedeći kod ne može uspješno kompajlirati:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+void Racun::info() const {
+    const Racun* const b;
+    Racun n(1,"asd");
+    this = &n;
+    cout << ime << endl;;
+}
+\end{minted}
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\section{Upotreba \texttt{this} pokazivača}
+
+
+\subsection{Ulančavanje poziva metoda}
+
+Pokazivač \texttt{this} može se koristiti za ulančavanje poziva metoda (engl. \emph{method chaining}). Takav način korištenja već smo susreli kod klase \texttt{std::string}. Na primjer, za objekt \texttt{rijec} tipa te klase moguće je napisati:
+
+\begin{minted}{C++}
+rijec.append("je").append("dan");
+\end{minted}
+
+Metoda \texttt{append} deklarirana je na sljedeći način:
+
+\begin{minted}{C++}
+string& std::string::append(const string& str);
+\end{minted}
+
+Budući da metoda vraća referencu na objekt nad kojim je pozvana, moguće je odmah pozvati novu metodu nad rezultatom prethodnog poziva. U implementaciji se to najčešće ostvaruje vraćanjem izraza \texttt{*this}. Stoga je drugi poziv metode \texttt{append} u prethodnom primjeru ekvivalentan pozivu
+
+\begin{minted}{C++}
+rijec.append("dan");
+\end{minted}
+
+nad istim objektom \texttt{rijec}. Na taj način omogućeno je ulančavanje više uzastopnih poziva metoda u jednom izrazu.
+
+
+\begin{zadatak}
+    Dodajte klasi \texttt{Racun} 
+    iz zadatka \ref{zad:racuni-ukupno} 
+    funkciju \texttt{uplati} za uplatu na pojedini račun. 
+    Funkcija prima iznos (tipa \texttt{double}) za uplatu.
+    \begin{itemize}
+        \item[(a)]
+        Treba li ta funkcija biti statička ili ne-statička?
+        \item[(b)]
+        Omogućite ulančavanje poziva te funkcije, poput
+        \begin{center}
+            \texttt{r1.uplati(12).uplati(0.23);}
+        \end{center}
+        pri čemu je \texttt{r1} tipa \texttt{Racun}.
+    \end{itemize}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    \begin{itemize}
+        \item[(a)]
+        Funkcija \texttt{uplati} treba biti nestatička, jer mijenja stanje konkretnog objekta klase \texttt{Racun}.
+
+        \item[(b)]
+        Dodamo u sučelje klase \texttt{Racun}
+        potrebnu deklaraciju (u \texttt{Racun.h} datoteci):
+        \medskip
+
+        \begin{minted}{C++}
+class Racun {
+    ...
+public:
+    Racun& uplati(double);
+    ...
+};
+        \end{minted}
+        \medskip
+
+        Dodamo u \texttt{Racun.cpp} datoteku:
+        \medskip
+
+        \begin{minted}{C++}
+Racun& Racun::uplati(double i) {
+    iznos += i;
+    return *this;
+}
+        \end{minted}
+    \end{itemize}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+\begin{enumerate}
+    \item
+    U prethodnom rješenju, koju bi grešku pri kompajliranju dobili ako bi funkcija \texttt{uplati} bila statička?
+    \item
+    Zašto je povratni tip \texttt{Racun\&}, a ne \texttt{Racun}?
+    Koji bi tada bio rezultat izvršavanja sljedećeg koda
+    (za objekt \texttt{r1} tipa \texttt{Racun}):
+    \begin{minted}{C++}
+r1.uplati(100).uplati(200);
+    \end{minted}
+    \item 
+    Zašto funkcija \texttt{uplati} vraća \texttt{*this}, a ne samo \texttt{this}?
+    Kako bi izgledala funkcija (te upotreba te funkcije) 
+    koja bi umjesto \texttt{*this} vraćala \texttt{this}?
+    \item 
+    Koji od sljedeća dva retka je ispravan obzirom na trenutni kod koji imamo (ako je \texttt{r1} objekt klase \texttt{Racun}):
+    \begin{minted}{C++}
+r1.uplati(100).info();
+r1.info().uplati(100);
+    \end{minted}
+    Što bi trebalo promijeniti kako bi se oba gornja retka kompajlirala?
+\end{enumerate}
+\end{razmisljanje}
+
+
+\subsection{Vođenje evidencije postojećih objekata}
+
+Želimo napisati funkciju koja omogućuje dohvat informacija o svim objektima klase \texttt{Racun} koji u nekom trenutku postoje u programu. 
+Budući da takva funkcionalnost nije vezana uz pojedini objekt klase \texttt{Racun}, već uz klasu u cjelini, implementirat ćemo je kao statičku funkciju.
+\medskip
+
+Kako bismo mogli pristupiti svim postojećim računima, klasa će sadržavati statičku listu pokazivača na objekte klase \texttt{Racun}. 
+Prilikom stvaranja novog objekta, pokazivač \texttt{this} dodaje se u tu listu, čime se svaki račun automatski registrira među aktivnim računima.
+Slično, uklanjamo pokazivač \texttt{this} pri uništavanju
+pojedinog objekta.
+\medskip
+
+Na taj način statičke funkcije klase mogu pristupiti svim postojećim objektima i, primjerice, ispisati njihove podatke ili izračunati ukupno stanje svih računa.
+
+\begin{zadatak}
+    Dodajte klase \texttt{Racun} listu odgovarajućeg tipa tako da
+    klasa \texttt{Racun} omogućuje pristup svim objektima tipa te klase koji trenutno postoje u programu.
+    Dodajte klase i (statičku) funkciju \texttt{void info\_svi()}
+    koja će ispisati informacije o svim računima
+    (pozivom \texttt{info} metode pojedinog računa).
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Dopunimo deklaraciju klase \texttt{Racun} (u \texttt{Racun.h} datoteci):
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <list>
+class Racun {
+private:
+    ...
+    static std::list<Racun*> svi;
+public:
+    static void info_svi();
+    ...
+};
+    \end{minted}
+
+    Uočite da smo dodali \texttt{\#include <list>} u datoteku \texttt{Racun.h}, a također ćemo to sad dodati i u 
+    datoteku \texttt{Racun.cpp}.
+    U toj \texttt{Racun.cpp} datoteci dopunit ćemo konstruktor, konstruktor kopiranja te destruktor
+    kako bi lista svih objekata tipa \texttt{Racun}
+    u svakom trenutku bila ažurna.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <list>
+Racun::Racun(double iz, std::string im) : ... {
+    ...
+    svi.push_back(this);
+}
+Racun::~Racun() {
+    ...
+    svi.remove(this);
+}
+Racun::Racun(const Racun& r) : ... {
+    ...
+    svi.push_back(this);
+}
+    \end{minted}
+
+    Dodamo definiciju statičke liste u datoteku \texttt{Racun.cpp} zajedno s implementacijom
+    funkcije \texttt{Racun::info\_svi} koja pomoću
+    iteratora prolazi listom pokazivača na sve račune i 
+    ispisuje informacije o pojedinom računu
+    (pozivom pripadne funkcije \texttt{info} pojedinom računa).
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+list<Racun*> Racun::svi;
+void Racun::info_svi() {
+    cout << "Informacije o svim racunima:" << endl;
+    list<Racun*>::iterator it;
+    for(it = svi.begin(); it != svi.end(); ++it)
+        (*it)->info();
+}
+    \end{minted}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+\begin{enumerate}
+    \item
+    Koja je u prethodnom rješenju prednost upotrebe liste u odnosu na, primjerice, vektor?
+    \item
+    Zašto umjesto liste pokazivača na račune ne možemo koristiti listu računa?
+    \item 
+    Ako su \texttt{primjer}, \texttt{r1} i \texttt{r2}
+    jedini računi koji se pojavljuju u programu,
+    što će ispisati funkcija \texttt{info\_svi} u svakom od sljedećih poziva:
+
+    \begin{minted}{C++}
+Racun::info_svi();
+const Racun primjer(100,"test");
+{
+    Racun r1(100.99,"John"), r2(123.23,"Mary");
+    r1.uplati(100).uplati(321.23);
+    Racun::info_svi();
+}
+Racun::info_svi();
+    \end{minted}
+\end{enumerate}
+\end{razmisljanje}
+
+\section{friend funkcije}
+
+\section{predefiniranje operatora}

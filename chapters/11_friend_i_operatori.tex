@@ -1,0 +1,1276 @@
+\chapter{Prijateljske funkcije i klase te operatori}
+
+\section{Prijateljske funkcije i klase}
+
+Sadržaj \textit{Klijent.h} datoteke:
+
+\begin{minted}{C++}
+#pragma once
+#include <string>
+#include <vector>
+
+class Klijent {
+private:
+    std::string ime;
+    std::vector<double> transakcije;
+    double ukupno();
+public:
+    Klijent(std::string i = "nepoznat", double pocetno = 0);
+    void uplati(double iznos, Klijent &k);
+    void info();
+};
+\end{minted}
+
+
+Sadržaj \textit{Klijent.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <iostream>
+#include <string>
+#include "Klijent.h"
+
+using namespace std;
+
+Klijent::Klijent(string i, double p)
+	: ime(i), transakcije(1,p) {}
+
+void Klijent::uplati(double iznos, Klijent &k) {
+    k.transakcije.push_back(iznos);
+    transakcije.push_back(-iznos);
+}
+	
+double Klijent::ukupno() {
+	double zbroj = 0;
+	vector<double>::iterator it;
+	for(it = transakcije.begin();
+		it != transakcije.end(); ++it)
+			zbroj += *it;
+	return zbroj;
+}
+
+void Klijent::info() {
+	cout << "Podaci o racunu klijenta:" << endl;
+	cout << "\tIme: " << ime << endl;
+	cout << "\tTransakcije: " << endl;
+	if(transakcije.empty())
+		cout << "\tNema transakcija!" << endl;
+	else {
+		vector<double>::iterator it;
+		for(it = transakcije.begin();
+			it != transakcije.end(); ++it)
+				cout << "\t\t" << *it 
+					 << " EUR" << endl;
+	}
+	cout << "Ukupno na racunu: "
+		 << ukupno() << " EUR." << endl;
+}
+\end{minted}
+
+
+Sadržaj \textit{main.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <iostream>
+#include "Klijent.h"
+
+using namespace std;
+
+int main(void) {
+	Klijent a, b("Bob",1200);
+	a.uplati(1150.99,b);
+	a.info();
+	b.info();
+	
+	return 0;
+}
+\end{minted}
+
+
+\textbf{Prijateljske funkcije} (engl.\ \textit{friend functions}) 
+predstavljaju posebne funkcije koje nisu članice klase, ali im je dopušten pristup privatnim i zaštićenim članovima te klase. 
+Time se zadržava enkapsulacija, uz kontrolirano dopuštanje pristupa podacima kada je to potrebno.
+Takve funkcije deklariraju se unutar definicije klase pomoću ključne riječi \texttt{friend}.
+\medskip
+
+Važno je naglasiti da \texttt{friend} funkcija nije metoda klase.
+Primjerice,
+ako imamo (globalnu) funkciju prototipa \texttt{int funkcija(int broj);}
+koja koristi neki privatan član neke klase \texttt{Klasa},
+u definiciji te klase deklariramo tu funkciju kao prijateljsku ovako:
+\begin{minted}{C++}
+class Klasa {
+friend int funkcija(int broj);
+...
+};
+\end{minted}
+Međutim, ako je objekt \texttt{obj} tipa klase \texttt{Klasa},
+ne možemo pisati
+\begin{minted}{C++}
+int rezultat = obj.funkcija(123);
+\end{minted}
+Pri pokušaju kompajliranja prethodne linije koda,
+kompajler će javiti grešku da klasa \texttt{Klijent} nema člana s imenom \texttt{provjera\_uvjeta}.
+\medskip
+
+Deklaracija prijateljske funkcije može se nalaziti u bilo kojem dijelu klase, 
+obzirom da na njih ne utječe kontrola pristupa
+(tj.\ modifikatori \texttt{public}, \texttt{private} i \texttt{protected}).
+
+\begin{zadatak}\label{zad:klijent-friend}
+    U \textcolor{red}{zadatku ...} implementirana je klasa \texttt{Klijent}
+    pomoću koje banka pamti transakcije pojedinog klijenta u vektoru realnih brojeva.
+    Nenegativne iznose, tj.\ realne brojeve, u tom vektoru nazivamo primanjima tog klijenta.
+    Napišite (globalnu) funkciju 
+    \begin{center}
+        \texttt{bool provjera\_uvjeta(double rata, Klijent\& k)}
+    \end{center}
+    koja vraća \texttt{true} ako i samo ako klijent \texttt{k} 
+    može podignuti u toj banci kredit s ratom koja iznosi \texttt{rata} eura.
+    Klijent može podignuti s tim iznosom rate ako
+    mu iznos te rate iznosi najviše 45\% prosječnog primanja.
+    \medskip
+
+    Napišite i program za testiranje u \textit{main.cpp} datoteci.
+    Kako bi ta datoteka bila pregledna, funkciju \texttt{provjera\_uvjeta}
+    implementirajte u \textit{Klijent.cpp} datoteci.
+    Zbog kasnije ponovne upotrebe koda, prvo klasi \texttt{Klijent}
+    dodajte pomoćnu privatnu metodu \texttt{double prosjek\_primanja();}
+    koja vraća iznos prosječnog primanja klijenta.
+\end{zadatak}
+
+
+\begin{rjesenje}
+Dodajemo klasi \texttt{Klijent}
+(u \textit{Klijent.h} datoteci) deklaraciju tražene pomoćne privatne metode \texttt{prosjek\_primanja}:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Klijent {
+private:
+    double prosjek_primanja();
+    ...
+}
+\end{minted}
+
+Dodajemo implementaciju te metode u \textit{Klijent.cpp} datoteku:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+double Klijent::prosjek_primanja() {
+    double prosjek = 0;
+    int brojac = 0;
+    vector<double>::iterator it;
+    for(it = transakcije.begin(); 
+        it != transakcije.end(); ++it) {
+            if(*it > 0) {
+                prosjek += *it;
+                brojac++;
+            }
+    }
+    if(brojac != 0)
+        prosjek /= brojac;
+    return prosjek;
+}
+\end{minted}
+
+Upotrebom te metode, implementiramo funkciju \texttt{provjera\_uvjeta}
+u \texttt{Klijent.cpp} datoteci:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+bool provjera_uvjeta(double rata, Klijent& k){
+    return 0.45 * k.prosjek_primanja() >= rata;
+}
+\end{minted}    
+
+Obzirom da je metoda \texttt{prosjek\_primanja}
+u klasi \texttt{Klijent} označena kao privatna,
+trebamo u klasi \texttt{Klijent} dati dopuštenje 
+funkciji \texttt{provjera\_uvjeta}
+za upotrebu privatnih dijelova klase.
+To činimo označavanjem te funkcije kao prijateljske u klasi \texttt{Klijent}
+(u \textit{Klijent.h} datoteci):
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Klijent {
+friend bool provjera_uvjeta(double rata, Klijent &k);
+...
+};
+\end{minted}
+
+Sadržaj \textit{main.cpp} datoteke za testiranje:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <iostream>
+#include "Klijent.h"
+
+using namespace std;
+
+int main(void) {
+	Klijent a, b("Bob",1200);
+	cout << provjera_uvjeta(535,b) << endl;
+	a.uplati(1150.99,b);
+	cout << provjera_uvjeta(535,b) << endl;
+	a.info();
+	b.info();
+	
+	return 0;
+}
+\end{minted}
+\end{rjesenje}
+
+
+Osim funkcija, također i cijela klasa može biti deklarirana kao prijatelj druge klase (tj.\ kao \textbf{prijateljska klasa}). 
+Time se svim članicama prijateljske klase omogućuje pristup privatnim i zaštićenim članovima klase koja joj je dodijelila status prijatelja.
+\medskip
+
+Prijateljska klasa također se deklarira pomoću ključne riječi \texttt{friend} unutar definicije druge klase.
+Primjerice, ako želimo nekoj klasi \texttt{Banka}
+dopustiti pristup svim članovima klase \texttt{Racun},
+u definiciji te klase \texttt{Racun}
+navodimo deklaraciju klase \texttt{Banka} pomoću ključne riječi \texttt{friend} ovako:
+\begin{minted}{C++}
+class Racun {
+friend class Banka;
+...
+};
+\end{minted}
+
+
+Istaknimo da prijateljstvo klasa nije uzajamno, ne nasljeđuje se i nije tranzitivno.
+Primjerice, u slučaju gornjih klasa \texttt{Racun} i \texttt{Banka}, iako je klasa \texttt{Banka}
+prijateljska klasa klasi \texttt{Racun},
+to ne znači da je klasa \texttt{Racun} prijateljska
+klasi \texttt{Banka}.
+Klasa \texttt{Banka} također nije prijateljska
+klasama koje nasljeđuju klasu \texttt{Racun}.
+Nadalje,
+ako je neka klasa prijateljska klasi \texttt{Banka},
+ona nije prijateljska klasa klasi \texttt{Racun}.
+
+
+\begin{zadatak}\label{zad:kredit}
+    Napišite klasu \texttt{Kredit} koja modelira bankovni kredit. 
+    Klasa treba sadržavati podatke
+    o glavnici (tj.\ iznosu kredita u eurima),
+    godišnjoj kamatnoj stopi (izraženoj u postocima)
+    i roku otplate (u mjesecima).
+    Konstruktor treba primati vrijednosti za 
+    ta tri podatka te njima inicijalizirati objekt.
+    Dodajte klasi metodu \texttt{mjesecna\_rata}
+    koja ne prima dodatne argumente, nego samo izračunava i vraća 
+    iznos mjesečne anuitetske rate.
+    Ta rata se računa prema formuli
+    $$\frac{G\cdot m\cdot(1+m)^n}{(1+m)^n-1},$$
+    gdje je $G$ glavnica kredita, $m$ mjesečna kamatna stopa
+    te $n$ broj mjeseci otplate.
+    \medskip
+
+    Zatim dodajte toj klasi javnu metodu 
+    \begin{center}
+        \texttt{bool provjera\_sposobnosti(Klijent \&k)}
+    \end{center}
+    koja za klijenta tipa klase \texttt{Klijent}
+    (iz zadatka \ref{zad:klijent-friend})
+    provjerava njegovu kreditnu sposobnost,
+    tj.\ može li taj klijent dići taj kredit
+    (pri čemu je jedini uvjet obzirom na primanja i iznos rate kredita opisan u zadatku \ref{zad:klijent-friend}).
+    Navedena metoda mora koristiti metode klase \texttt{Klijent},
+    pri čemu joj se to mora omogućiti upotrebom \texttt{friend} deklaracije odgovarajuće klase.
+    \medskip
+
+    Naposlijetku, napišite i program za testiranje.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Deklaracija klase \texttt{Kredit} (u datoteci \textit{Kredit.h}):
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#pragma once
+#include "Klijent.h"
+
+class Kredit {
+	double glavnica;
+	double stopa;
+	unsigned rok;
+public:
+    Kredit(double g, double s, unsigned r);
+    double mjesecna_rata();
+    bool provjera_sposobnosti(Klijent& k);	
+};
+    \end{minted}
+
+Implementacija funkcija članica klase u \textit{Kredit.cpp} datoteci,
+pri čemu smo zbog upotrebe funkcije za potenciranje \texttt{pow}
+uključili biblioteku matematičkih funkcija \texttt{cmath}:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <cmath>
+#include "Klijent.h"
+#include "Kredit.h"
+
+using namespace std;
+
+Kredit::Kredit(double g, double s, unsigned r)
+    : glavnica(g), stopa(s), rok(r) {}
+
+double Kredit::mjesecna_rata() {
+    double m = stopa / 100 / 12;
+    return (glavnica * m * pow(1+m,rok))
+		/ (pow(1+m,rok)-1);
+}
+
+bool Kredit::provjera_sposobnosti(Klijent& k) {
+    return k.prosjek_primanja() * 0.45 >= mjesecna_rata();
+}
+    \end{minted}
+    U funkciji \texttt{Kredit::mjesecna\_rata} podijelili
+    smo godišnju stopu \texttt{stopa} s brojem $12$
+    kako bi dobili iznos mjesečne stope
+    te s brojem $100$ kako bismo postotak pretvorili u 
+    realan broj između 0 i 1.
+    \medskip
+    
+    Uočimo da metoda \texttt{provjera\_sposobnosti} klase \texttt{Kredit} pristupa metodi \texttt{prosjek\_primanja} klase \texttt{Klijent}
+    koja je u toj klasi označena kao privatna.
+    Prema tome, potrebno je u definiciji klase \texttt{Klijent}
+    (u \textit{Klijent.h} datoteci)
+    deklarirati klasu \texttt{Kredit} kao prijateljsku klasu
+    (kako bi metode klase \texttt{Kredit} dobile pristup privatnim članovima klase \texttt{Klijent}):
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+    class Klijent {
+    friend class Kredit;    
+    ...
+    };
+    \end{minted}
+
+    Sadržaj \textit{main.cpp} datoteke s primjerom programa za testiranje:
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <iostream>
+
+#include "Klijent.h"
+#include "Kredit.h"
+
+using namespace std;
+
+int main(void) {
+    Klijent a, b("Bob",1200);
+    a.uplati(1150.99,b);
+	
+    Kredit stan(130000,2.85,360);
+    cout << stan.mjesecna_rata() << endl;
+    
+    return 0;
+}
+\end{minted}
+\end{rjesenje}
+
+
+Pažljiviji čitatelji uočit će da u datoteci \textit{Klijent.h} u rješenju prethodnog zadatka 
+nismo uključili datoteku
+\textit{Kredit.h} iako u toj datoteci imamo sljedeći kod:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Klijent {
+friend class Kredit;    
+...
+};
+    \end{minted}
+Naime, nije potrebno uključiti zaglavlje neke klase samo zato što se njezino ime pojavljuje u deklaraciji
+prijateljske klase.
+Ipak, važno je naglasiti da bi u ovom slučaju 
+uključivanje datoteke zaglavlja \textit{Kredit.h}
+u datoteci \textit{Klijent.h} bilo pogrešno
+zbog pojave \textbf{kružne ovisnosti}
+(engl.\ \textit{circular dependency}).
+Preciznije,
+dobili bismo situaciju da datoteka \textit{Klijent.h}
+ovisi o datoteci \textit{Kredit.h}
+(jer ju uključuje) te da
+datoteka \textit{Kredit.h} ovisi o datoteci \textit{Klijent.h}.
+Napomenimo i da ovdje ne pomaže upotreba direktive
+\begin{minted}{C++}
+#pragma once
+\end{minted}
+u svakoj od datoteka zaglavlja jer ona samo sprječava višestruko uključivanje istog zaglavlja
+(ne rješava problem kad u obradi prve datoteke kompajler još nema potrebnu informaciju iz druge datoteke,
+a ta druga pak datoteka zahtijeva obradu te prve datoteke).
+Jedno moguće rješenje za pojavu kružne ovisnosti
+(koje ćemo koristiti i u sljedećem zadatku)
+je upotreba deklaracije klase unaprijed.
+\medskip
+
+\textbf{Deklaracija unaprijed} (engl.\ \textit{forward declaration}) 
+govori kompajleru da određena klasa, struktura, funkcija ili tip postoji, bez prikazivanja cijele definicije.
+Primjerice,
+ako neka klasa \texttt{Profesor} zahtijeva postojanje klase \texttt{Kolegij},
+bez poznavanja članova koje ta klasa ima,
+mogli bismo u datoteci zaglavlja klase \texttt{Profesor} (bez potrebe za uključivanjem datoteke zaglavlja te klase \texttt{Kolegij})
+naznačiti komapjleru da ta klasa \texttt{Kolegij} postoji na sljedeći način:
+\begin{minted}{C++}
+class Kolegij; // deklaracija unaprijed klase Kolegij
+class Profesor {
+    Kolegij* kolegiji;
+    ...
+};
+\end{minted}
+Međutim, to radi samo ukoliko koristimo u klasi \texttt{Profesor}
+pokazivače ili reference na objekte tipa klase \texttt{Kolegij},
+te ne koristimo članove klase \texttt{Kolegij}.
+Primjerice, sljedeće bi bilo neispravno:
+\begin{minted}{C++}
+class Kolegij; // deklaracija unaprijed klase Kolegij
+class Profesor {
+friend int Kolegij::sifra_kolegija();
+...
+};
+\end{minted}
+
+
+\begin{zadatak}
+    U zadatku \ref{zad:kredit} u klasi \texttt{Klijent}
+    deklarirali smo klasu \texttt{Kredit} kao njoj prijateljsku klasu.
+    Međutim, ne trebaju sve funkcije članice klase \texttt{Kredit}
+    pristup privatnim članovima klase \texttt{Klijent}.
+    Izmijenite potrebne dijelove odgovarajućih datoteka zaglavlja tih klasa
+    kako bi klasa \texttt{Klijent} umjesto deklariranja
+    prijateljske klase \texttt{Kredit},
+    deklarirala samo one metode klase \texttt{Kredit}
+    kao prijateljske koje su potrebne za ispravno kompajliranje koda.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    U klasi \texttt{Kredit} jedino funkcija članica
+    \texttt{provjera\_sposobnosti} pristupa dijelovima klase \texttt{Klijent}
+    koji nisu javni.
+    Prema tome, možemo samo nju napraviti prijateljskom funkcijom klase \texttt{Klijent} (a ne cijelu klasu \texttt{Kredit}):
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Klijent {
+// friend class Kredit; - ovu liniju koda ukloniti
+friend bool Kredit::provjera_sposobnosti(Klijent&);
+...
+};
+\end{minted}
+Kako koristimo članove klase \texttt{Kredit}
+(preciznije, metodu \texttt{provjera\_sposobnosti}),
+potrebno je u datoteku \textit{Klijent.h} dodati
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include "Kredit.h"
+\end{minted}
+No, kako bismo sada izbjegli pojavu kružne ovisnosti
+(obzirom da datoteka \textit{Kredit.h} uključuje upravo izmijenjenu
+\textit{Klijent.h} datoteku),
+u datoteci \textit{Klijent.h} zamijenimo
+uključivanje datoteke \texttt{Kredit.h} sa deklaracijom unaprijed klase \texttt{Kredit}:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+//#include "Klijent.h" - ovu liniju koda ukloniti
+
+class Klijent; // dodana deklaracija unaprijed
+
+class Kredit {
+    ...
+};
+\end{minted}
+\end{rjesenje}
+
+
+
+\section{Nadogradnja operatora}
+
+
+Sadržaj \textit{Matrica.h} datoteke:
+
+\begin{minted}{C++}
+#pragma once
+#include <iostream>
+#include <utility>
+
+class Matrica {
+public:
+	Matrica(size_t a = 0,size_t b = 0,double c = 0);
+	~Matrica();
+	Matrica(const Matrica &);
+private:
+	void alociraj();
+	void dealociraj();
+	std::pair<size_t,size_t> dim;
+	double **elementi;
+};
+\end{minted}
+
+Sadržaj \textit{Matrica.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <iostream>
+#include <utility>
+#include "Matrica.h"
+
+using namespace std;
+
+void Matrica::alociraj() {
+	elementi = new double*[dim.first];
+	for(size_t i = 0; i < dim.first; ++i)
+		elementi[i] = new double[dim.second];
+}
+
+void Matrica::dealociraj() {
+	for(size_t i = 0; i < dim.first; ++i)
+		delete[] elementi[i];
+	delete[] elementi;
+	elementi = nullptr;
+}
+
+Matrica::Matrica(size_t a, size_t b, double c) {
+	dim.first = a;
+	dim.second = b;
+	alociraj();
+	for(size_t i = 0; i < dim.first; ++i)
+		for(size_t j = 0; j < dim.second; ++j)
+			elementi[i][j] = c;
+}
+
+Matrica::~Matrica() {
+	dealociraj();
+}
+
+Matrica::Matrica(const Matrica &m) {
+	dim = m.dim;
+	alociraj();
+	for(size_t i = 0; i < dim.first; ++i)
+		for(size_t j = 0; j < dim.second; ++j)
+			elementi[i][j] = m.elementi[i][j];
+}
+\end{minted}
+
+Sadržaj \textit{main.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <iostream>
+#include "Matrica.h"
+
+using namespace std;
+
+int main(void) {
+	Matrica A(2,3,1.5), 
+		B(2,3,2.4),
+		C(2,3), D;
+	
+	return 0;
+}
+\end{minted}
+
+
+\textbf{Nadogradnja} ili \textbf{preopterećivanje} operatora (engl. \textit{operator overloading}) 
+omogućuje definiranje značenja postojećih C++ operatora kada se primjenjuju na objekte korisnički definiranih klasa. 
+Na taj način objekti naših klasa mogu se koristiti slično ugrađenim tipovima podataka, što čini programe preglednijima i jednostavnijima za pisanje.
+\medskip
+
+Primjerice, za ugrađene numeričke tipove prirodno je pisati izraze poput:
+\begin{minted}{C++}
+cout << 2 + 3 * 4 << endl;
+\end{minted}
+
+Kada radimo s vlastitim klasama, primjerice klasom \texttt{Matrica}
+koja reprezentira matrice realnih brojeva, željeli bismo zadržati isti način zapisivanja izraza:
+\begin{minted}{C++}
+cout << A + 2 * B << endl;
+\end{minted}
+
+Bez nadogradnje operatora morali bismo koristiti posebne funkcije poput:
+\begin{minted}{C++}
+ispis(zbroj(A, umnozak(2, B)));
+\end{minted}
+
+Iako bi oba zapisa dala isti rezultat, korištenje operatora znatno povećava čitljivost programa.
+Važno je naglasiti da se nadogradnjom operatora ne stvaraju novi operatori niti se mijenja njihova sintaksa, prioritet ili broj operanada. 
+Nadogradnjom samo definiramo kako će postojeći operatori djelovati nad objektima određene klase.
+\medskip
+
+Općenito, nadograđeni operator implementira se kao funkcija čije je ime oblika \texttt{operatorX}, 
+pri čemu je \texttt{X} simbol operatora koji nadograđujemo.
+Broj i tip operanada, kao i tip povratne vrijednosti,
+ovisi o operatoru \texttt{X} koji nadograđujemo.
+U nastavku ove točke proći ćemo operatore koji se najčešće nadograđuju.
+
+
+\subsection{Nadogradnja operatora za unos i ispis}
+
+
+Primjerice, za objekte naše vlastite klase \texttt{Matrica}
+želimo pomoću sljedeće linije koda omogućiti ispis objekata \texttt{A} i \texttt{B}
+tog tipa \texttt{Matrica}:
+
+\begin{minted}{C++}
+cout << A << B << endl;
+\end{minted}
+
+Primijećujemo da operator \texttt{<\!<} ima dva operanda,
+jedan s lijeve strane i jedan s desne strane simbola \texttt{<\!<} - 
+objekt \texttt{std::cout} (tipa \texttt{std::ostream})
+i objekt tipa \texttt{Matrica}.
+Povratna vrijednost operatora \texttt{<\!<} mora biti referenca na objekt s lijeve strane, 
+tj.\ na \texttt{std::cout} kako bi ulančavanje
+poziva operatora \texttt{<\!<} u gornjem primjeru
+bilo moguće.
+Preciznije, gornji izraz je jednak, gledajući prioritete,
+izrazu 
+\begin{minted}{C++}
+((cout << A) << B) << endl;
+\end{minted}
+pa izraz u unutarnjoj zagradi treba vratiti referencu na 
+objekt \texttt{cout} kako bi se na njega zatim
+mogao ispisati objekt \texttt{B}.
+\medskip
+
+Slično, želimo pomoću operatora za unos \texttt{>\!>}
+omogućiti unos objekata \texttt{A} i \texttt{B}
+tipa naše vlastite klase \texttt{Matrica} kao u sljedećem primjeru:
+
+\begin{minted}{C++}
+cin >> A >> B;
+\end{minted}
+
+Operator \texttt{>\!>} ima dva operanda - objekt \texttt{std::cin} (tipa \texttt{std::istream})
+i objekt tipa \texttt{Matrica}.
+Ponovo, zbog ulančavanja je povratna vrijednost referenca na objekt s lijeve strane tog operatora.
+\medskip
+
+Istaknimo da se objekti tipa \texttt{std::ostream} i \texttt{std::istream} ne mogu kopirati
+(pa prema tome koristimo reference u argumentima funkcija i njihovim povratnim vrijednostima
+koje se odnose na te tipove).
+
+
+\begin{zadatak}\label{zad:operator-unos-i-ispis}
+Nadogradite operatore \texttt{>\!>} i \texttt{<\!<} za klasu
+\texttt{Matrica} iz \textcolor{red}{zadatka ...} 
+kako bi se objekti te klase mogli unositi
+i ispisivati pomoću izraza \texttt{cin >\!> A} i \texttt{cout <\!< A}
+(pri čemu je objekt \texttt{A} tipa klase \texttt{Matrica}.
+Napišite i program za testiranje koji učitava elemente
+dviju matrica te ih ispisuje upotrebom
+nadograđenih operatora.
+\end{zadatak}
+
+
+\begin{rjesenje}
+Matrice ćemo ispisati na način da ispišemo njihove elemente po retcima matrice.
+Svaki redak matrice bit će ispisan u zasebnom retku, a
+elementi pojedinog retka će odvojeni jednim znakom razmaka.
+Matrice unosimo tako da unosimo element po element matrice, također po retcima.
+\medskip
+
+Dodamo u \textit{Matrica.cpp} datoteku implementaciju nadograđenog operatora za ispis matrica
+te nadograđenog operatora za unos matrica:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+ostream& operator<<(ostream& os, const Matrica &m) {
+    for(size_t i = 0; i < m.dim.first; ++i) {
+        for(size_t j = 0; j < m.dim.second; ++j) {
+            os << m.elementi[i][j] << " ";
+        }
+        cout << endl;
+    }
+    return os;
+}
+
+istream& operator>>(istream &is, Matrica &m) {
+    for(size_t i = 0; i < m.dim.first; ++i) {
+        for(size_t j = 0; j < m.dim.second; ++j) {
+            is >> m.elementi[i][j];
+        }
+    }
+    return is;
+}
+\end{minted}
+Uočimo da u implementaciji operatora \texttt{>\!>}
+matrica \texttt{m} nije označena sa \texttt{const}
+obzirom da ju ta funkcija treba promijeniti.
+Slično, unos i ispis podataka mijenjaju stanje odgovarajućih \texttt{ostream}
+i \texttt{istream} objekata korištenih u tim funkcijama pa niti njih ne možemo označiti sa \texttt{const}.
+\medskip
+
+Obzirom da prikazane verzije nadograđenih operatora pristupaju
+privatnim članovima klase \texttt{Matrica},
+deklariramo ih kao prijateljske funkcije u toj klasi
+(u \textit{Matrica.h} datoteci):
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Matrica {
+friend std::ostream& operator<<(std::ostream& os, 
+    const Matrica& m);
+friend std::istream& operator>>(std::istream& is, Matrica& m);
+...
+};
+\end{minted}
+
+Sadržaj datoteke \textit{main.cpp} s programom za testiranje:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+#include <iostream>
+#include "Matrica.h"
+
+using namespace std;
+
+int main(void) {
+    Matrica A(2,3), B(2,3);
+    cout << "Unesite elemente matrice A: ";
+    cin >> A;
+    cout << "Unesite elemente matrice B: ";
+    cin >> B;
+
+    cout << "Matrica A: " << A << endl
+         << "Matrica B: " << B << endl;
+
+    return 0;
+}
+\end{minted}
+\end{rjesenje}
+
+Operatori su posebne funkcije, pa se kao i ostale
+funkcije mogu izravno pozivati.
+Tako bismo, primjerice, mogli za objekte \texttt{A} i \texttt{B} tipa klase \texttt{Matrica} umjesto
+\begin{minted}{C++}
+cout << A << B << endl;
+\end{minted}
+pisati
+\begin{minted}{C++}
+operator<<(operator<<(cout,A), B) << endl;
+\end{minted}
+Namjerno smo u gornjem izdvojili \texttt{endl}
+iz izravnog poziva funkcije \texttt{operator<\!<}
+kako bi naglasili da se tu ne primjenjuje naša
+verzija nadograđenog operatora \texttt{<\!<}
+(obzirom da se \texttt{endl} ne može pretvoriti u tip klase \texttt{Matrica}).
+
+
+\subsection{Nadogradnja aritmetičkih operatora}
+
+Operatori za zbrajanje, oduzimanje, množenje, dijeljenje i modulo (\texttt{+}, \texttt{-}, \texttt{*}, \texttt{/} i \texttt{\%}).
+
+\begin{zadatak}\label{zad:matrice-aritmetika}
+    Nadogradite operator \texttt{+} za zbrajanje objekata klase \texttt{Matrica}
+    iz zadatka \ref{zad:operator-unos-i-ispis}.
+    Nadogradite i operator \texttt{*}
+    tako da izraz \texttt{2 * A} predstavlja množenje matrice skalarom (pri čemu je skalar podatak tipa \texttt{double}).
+    Sljedeći kod bi se trebao uspješno kompajlirati i izvršavati:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Matrica A(2,3), B(2,3);
+        cin >> A >> B;
+        cout << A + B << endl << 2 * A;
+    \end{minted}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Operator za zbrajanje kao argumente ima dvije matrice koje zbrajamo
+    (koristimo reference kako ne bi nepotrebno kopirali te matrice,
+    te koristimo \texttt{const} obzirom da operator ne mijenja niti jednu od tih matrica).
+    Rezultat je nova matrica koju funkcija vraća kao rezultat.
+    Preciznije, zbroj dviju matrica izračunat ćemo u lokalnoj varijabli (tipa klase \texttt{Matrica}) te ćemo vratiti kopiju te lokalne varijable.
+    \medskip
+
+    Operator množenja \texttt{*} u ovom slučaju koristimo tako da s lijeve strane simbola \texttt{*} napišemo realan broj, a 
+    s desne strane matricu.
+    Tako da će operator u ovom slučaju imati kao prvi argument realan broj tipa \texttt{double}, a kao drugi element matricu.
+    Operator ne mijenja niti realan broj niti matricu,
+    a rezultat je nova matrica koju će funkcija vratiti.
+    \medskip
+
+    Prema tome, u datoteku \texttt{Matrica.cpp} dodajemo 
+    potrebne implementacije:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+Matrica operator+(const Matrica &lm, const Matrica &dm) {
+    Matrica zbroj(lm); // iskoristimo konstruktor kopiranjem
+    for(size_t i = 0; i < zbroj.dim.first; ++i) {
+        for(size_t j = 0; j < zbroj.dim.second; ++j) {
+            zbroj.elementi[i][j] += dm.elementi[i][j];
+        }
+    }
+    return zbroj;
+}
+
+Matrica operator*(const double &lbr, const Matrica &dm) {
+    Matrica rezultat(dm);
+    for(size_t i = 0; i < dm.dim.first; ++i)
+        for(size_t j = 0; j < dm.dim.second; ++j)
+            rezultat.elementi[i][j] *= lbr;
+    return rezultat;
+}
+    \end{minted}
+
+Obzirom da navedene funkcije koriste privatne članove klase \texttt{Matrica},
+dodamo u tu klasu (u \textit{Matrica.h} datoteci)
+njihove deklaracije kao deklaracije prijateljskih funkcija te klase:
+
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Matrica {
+friend Matrica operator+(const Matrica& lm, 
+    const Matrica& dm);
+friend Matrica operator*(const double& lbr, 
+    const Matrica& dm);
+...
+};
+\end{minted}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        Zašto nije ispravno u, primjerice, našoj nadogradnji operatora \texttt{+}
+        vratiti referencu, tj.\ zašto sljedeći kod nije ispravan:
+
+        \begin{minted}{C++}
+Matrica& operator+(const Matrica &lm, const Matrica &dm) 
+{
+    Matrica zbroj(lm);
+    for(size_t i = 0; i < zbroj.dim.first; ++i) {
+        for(size_t j = 0; j < zbroj.dim.second; ++j) {
+            zbroj.elementi[i][j] += dm.elementi[i][j];
+        }
+    }
+    return zbroj;
+}
+    \end{minted}
+
+    \item 
+    Što biste promijenili u našoj nadogradnji operatora \texttt{+} iz prethodnog zadatka
+    kako bi dobili nadogradnju operatora \texttt{-} za oduzimanje matrica?
+    Kako biste implementirali operator \texttt{*} za množenje dvije matrice?
+
+    \item 
+    Kako biste, za dvije matrice \texttt{A} i \texttt{B},
+    nadogradili operator \texttt{-} oduzimanja matrica
+    upotrebom operatora \texttt{+} za zbrajanje
+    matrica i operatora \texttt{*} za množenje matrice skalarom?
+
+    \item 
+    Kako biste napisali unarni operator \texttt{-} za klasu \texttt{Matrica}?
+    Koliko argumenata takav operator ima i koja mu je povratna vrijednost?
+
+    \item 
+    Iako mi to radi jednostavnosti koda ovdje nismo radili,
+    u nekim prethodno spomenutim operatorima nužne
+    su provjere matrica koje su im proslijeđene kao argumenti.
+    Primjerice, dvije matrice možemo zbrojiti samo ako su one istih dimenzija.
+    Koje biste provjere dodali u ostale spomenute operatore?
+    Kako biste prekinuli izvršavanje programa u slučaju da, primjerice,
+    operatoru za zbrajanje matrica budu kao argumenti proslijeđene matrice različitih dimenzija?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\subsection{Nadogradnja relacijskih operatora}
+
+
+Relacijski operatori \texttt{==}, \texttt{!=},
+\texttt{<}, \texttt{<=}, \texttt{>}, \texttt{>=}
+najčešće kao povratnu vrijednost imaju podatak tipa \texttt{bool}
+(jesu li argumenti u navedenoj relaciji ili nisu).
+Operator \texttt{==} za testiranje jednakosti dva objekta neke klase 
+obično se svodi na
+provjeru jesu li odgovarajući dijelovi objekata tipa te klase jednaki.
+Također, korisnik u slučaju da je nadograđen operator \texttt{==}
+obično očekuje da je nadograđen i operator \texttt{!=}
+(pri čemu se on definira pomoću tog, već nadograđenog, operatora \texttt{==}).
+Slično se često očekuje da definicije operatora 
+\texttt{<}, \texttt{<=}, \texttt{>} i \texttt{>=}
+budu konzistentne međusobno i s definicijama operatora \texttt{==} i \texttt{!=}.
+Primjerice, ako su dva objekta različita u smislu operatora \texttt{!=}
+tada mora biti jedan manji (\texttt{<}) ili veći (\texttt{>}) od drugoga
+(to je karakteristično za linearno ili totalno uređene skupove,
+poput skupa realnih brojeva).
+
+
+\begin{zadatak}\label{zad:matrice-usporedba}
+    Za klasu \texttt{Matrica} iz zadatka \ref{zad:matrice-aritmetika}
+    nadogradite operator usporedbe \texttt{==}
+    te operator \texttt{!=}.
+    Za matrice \texttt{A} i \texttt{B},
+    izraz \texttt{A == B} jednak je \texttt{true} ako i samo ako su matrice \texttt{A} i \texttt{B} jednake,
+    dok je izraz \texttt{A == B} jednak \texttt{true} ako i samo ako su matrice \texttt{A} i \texttt{B} različite.
+
+     Sljedeći kod bi se trebao uspješno kompajlirati i izvršavati:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Matrica A(2,3), B(2,3);
+        cin >> A >> B;
+        cout << (A == B) << endl << (A != 2 * B) << endl;
+    \end{minted}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Dvije matrice biti će jednake ako i samo ako imaju jednake
+    dimenzije i jednake odgovarajuće elemente.
+    Operator \texttt{!=} jednostavno ćemo implementirati upotrebom operatora \texttt{==}
+    kojeg smo prije njega nadogradili
+    upotrebom činjenice da su dvije matrice jednake
+    ako i samo ako ne vrijedi da su jednake.
+    \medskip
+
+    Dodajemo nadogradnje tih operatora u \textit{Matrica.cpp} datoteku:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+bool operator==(const Matrica &lm, const Matrica &dm) {
+    if(lm.dim != dm.dim) // uspoređivanje parova
+        return false;
+    for(size_t i = 0; i < lm.dim.first; ++i) {
+        for(size_t j = 0; j < lm.dim.second; ++j) {
+            if(lm.elementi[i][j] != dm.elementi[i][j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool operator!=(const Matrica &lm, const Matrica &dm) {
+    return !(lm == dm);
+}
+    \end{minted}
+
+Kako te funkcije koriste privatne članove klase \texttt{Matrica},
+deklariramo ih u toj klasi (u \textit{Matrica.h} datoteci) kao prijateljske funkcije te klase:
+\begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Matrica {
+friend bool operator==(const Matrica &lm, const Matrica &dm);
+friend bool operator!=(const Matrica &lm, const Matrica &dm);
+...
+};
+\end{minted}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item
+        Kako biste definirali neki uređaj \texttt{<} na matricama?
+        \item 
+        Ako za matrice (klase \texttt{Matrica})
+        nadogradimo operator \texttt{<},
+        kako biste pomoću njega (i operatora koje smo za tu klasu prethodno nadogradili)
+        nadogradili preostale relacijske operatore
+        (\texttt{<=}, \texttt{>}, \texttt{>=})?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\subsection{Nadogradnja operatora pridruživanja}
+
+Operator pridruživanja \texttt{=} implementiramo kao funkciju članicu
+klase na koju se odnosi.
+Kod takve implementacije, prvi operand (onaj s lijeve strane
+operatora pridruživanja \texttt{=}) vezan je uz implicitni pokazivač \texttt{this}.
+To znači da funkcija koju pišemo ima jedan operand manje (preciznije,
+imamo samo jedan operand i to onaj koji se nalazi s desne strane operatora pridruživanja \texttt{=}).
+Kao povratni tip vraćamo referencu na objekt s lijeve strane (onaj na koji se odnosi implicitan pokazivač \texttt{this})
+jer želimo omogućiti ulančavanje,
+poput \texttt{A = B = C}
+(ovdje se prvo pridružuje \texttt{B = C} i rezultat tog izraza je referenca na objekt \texttt{B}
+koji se zatim pridružuje objektu \texttt{A}).
+
+
+\begin{zadatak}\label{zad:matrice-pridruzivanje}
+Nadogradite operator pridruživanja za klasu \texttt{Matrica} iz zadatka \ref{zad:matrice-usporedba}.
+Pripazite da operator ispravno radi u slučaju samopridruživanja,
+tj.\ kad za neku matricu \texttt{A} imamo izraz \texttt{A = A}).
+\medskip
+
+Sljedeći kod bi se trebao uspješno kompajlirati i izvršavati:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Matrica A(2,3), B(5,6);
+        cin >> A;
+        A = A = B;
+        cout << B;
+    \end{minted}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Obzirom da će nadograđeni operator pridruživanja \texttt{=} biti funkcija članica klase \texttt{Matrica},
+    dodajemo njegovu deklaraciju u tu klasu
+    (u datoteci \textit{Matrica.h}):
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Matrica {
+...
+public:
+    Matrica &operator=(const Matrica& dm);
+...
+};
+    \end{minted}
+
+    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članica klase \texttt{Matrica}.
+    Pritom prvo provjerimo za slučaj \texttt{A = A},
+    je li objekt s lijeve strane (spremljen na adresi \texttt{this})
+    isti kao i objekt
+    na desnoj strani znaka \texttt{=}
+    (prema tome na istoj adresi kao i \texttt{this}).
+    Ako je to slučaj (tj.\ \texttt{A = A}),
+    operator pridruživanja \texttt{=} zapravo ne treba raditi ništa.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}    
+Matrica &Matrica::operator=(const Matrica& dm) {
+    if(this != &dm) {
+        dealociraj();
+        dim = dm.dim;
+        alociraj();
+        for(size_t i = 0; i < dim.first; ++i) {
+            for(size_t j = 0; j < dim.second; ++j) {
+                elementi[i][j] = dm.elementi[i][j];
+            }
+        }
+    }
+    return *this;
+}
+    \end{minted}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+         Ako za klasu \texttt{Matrica}
+         iz prethodnog zadatka ne nadogradimo operator pridruživanja \texttt{=}
+         tada će se sljedeći program kompajlirati, ali pri pokretanju srušiti:
+        \begin{minted}{C++}
+int main(void) {
+    Matrica A(2,3), B(2,3);
+    cin >> A;
+    B = A;
+    cout << B;
+
+    return 0;
+}
+        \end{minted}
+    Obrazložite.
+
+    \item 
+    Ako za klasu \texttt{Matrica}
+         iz prethodnog zadatka ne nadogradimo operator pridruživanja \texttt{=},
+         obrazložite zašto sljedeći program radi ispravno:
+    \begin{minted}{C++}
+int main(void) {
+    Matrica A(2,3);
+    cin >> A;
+    Matrica B = A;
+    cout << B;
+
+    return 0;
+}
+        \end{minted}
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\subsection{Nadogradnja operatora složenog pridruživanja}
+
+Operatori složenog pridruživanja (\texttt{+=}, \texttt{-=}, \texttt{*=}, \texttt{/=}, \texttt{\%=}) 
+mijenjaju objekt s lijeve strane operatora
+te je, kao i za operator pridruživanja \texttt{=}, 
+uobičajeno da vraćaju referencu na taj objekt.
+Zbog toga su najčešće implementirani kao funkcije članice klase objekta s lijeve strane operatora,
+iako se od njih to ne zahtijeva
+(mogu biti implementirani kao nečlanske funkcije,
+pri čemu je tada često u odgovarajućoj klasi 
+potrebna njihova deklaracija kao prijateljska funkcija toj klasi).
+
+
+\begin{zadatak}\label{zad:matrice-slozeno-pridruzivanje}
+    Nadogradite operator složenog pridruživanja \texttt{+=} za klasu \texttt{Matrica} iz zadatka \ref{zad:matrice-pridruzivanje}.
+    Operator matricu s desne strane operatora \texttt{+=} pribraja matrici s lijeve strane tog operatora.
+    \medskip
+
+    Sljedeći kod bi se trebao uspješno kompajlirati i izvršavati:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Matrica A(2,3), B(2,3);
+        cin >> A >> B;
+        (A += B) += A;
+        cout << A;
+    \end{minted}
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Obzirom da će nadograđeni operator \texttt{+=} biti funkcija članica klase \texttt{Matrica},
+    dodajemo njegovu deklaraciju u tu klasu
+    (u datoteci \textit{Matrica.h}):
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+class Matrica {
+...
+public:
+    Matrica &operator+=(const Matrica& dm);
+...
+};
+    \end{minted}
+    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članica klase \texttt{Matrica}.
+    Elementima matrice čija je to funkcija članica (tj.\ 
+    matrici s lijeve strane operatora \texttt{+=}),
+    dodajemo odgovarajuće elemente matrice s desne strane tog operatora
+    (tj.\ matrice koja je primljena kao argument funkcije).
+    Povratna vrijednost je referenca na promijenjenu matricu s lijeve strane operatora:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+Matrica& Matrica::operator+=(const Matrica& dm) {
+    for(size_t i = 0; i < dim.first; ++i)
+        for(size_t j = 0; j < dim.second; ++j)
+            elementi[i][j] += dm.elementi[i][j];
+    return *this;
+}
+    \end{minted}
+\end{rjesenje}
+
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        U prethodnom zadatku u testnom primjeru navedena je sljedeća linija koda:
+\begin{minted}{C++}
+(A += B) += A;
+\end{minted}
+    Obrazložite razliku u posljedicama izvrašavanja te linije u odnosu na sljedeću liniju koda:
+\begin{minted}{C++}
+A += B += A;
+\end{minted}
+
+    \item 
+    Prototip nadograđenog operatora iz rješenja prethodnog zadatka je
+    \begin{center}
+        \texttt{Matrica\& Matrica::operator+=(const Matrica\& dm)}
+    \end{center}
+    Obrazložite kako je uz ovakav prototip moguće kompajlirati i izvršiti sljedeću liniju koda
+    \begin{minted}{C++}
+    A += A;
+    \end{minted}
+    (ako prema toj liniji mijenjamo matricu s desne strane operatora koja je označena u nadograđenom operatoru kao \texttt{const}).
+
+    \item 
+    Zbog jednostavnosti u rješenju prethodnog zadatka nismo promatrali slučaj kad se s lijeve i desne strane operatora \texttt{+=}
+    nalaze matrice različitih dimenzija.
+    Kako biste u tom slučaju prekinuli izvrašavanje programa?
+    Kako biste implementirali operatore složenog pridruživanja \texttt{-=} i \texttt{*=}
+    za matrice?
+
+    \item 
+    Kako biste nadogradili operator složenog pridruživanja \texttt{*=} tako da 
+    omogućuje množenje matrice skalarom
+    (realan broj tipa \texttt{double})
+    pomoću izraza \texttt{A *= 1.5}?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+
+\subsection{Nadogradnja operatora indeksiranja}
+
+
+Klase koje predstavljaju spremnike podataka, odnosno strukture podataka iz kojih se elementi dohvaćaju prema njihovoj poziciji, 
+najčešće definiraju operator indeksiranja \texttt{[]}. 
+Njegova je svrha omogućiti pristup elementima na način sličan radu s poljima.
+\medskip
+
+Operator indeksiranja mora biti implementiran kao funkcija članica klase, jer se uvijek primjenjuje nad konkretnim objektom spremnika. 
+Uobičajena implementacija vraća referencu na dohvaćeni element, što omogućuje ne samo čitanje njegove vrijednosti nego i njezino izravno mijenjanje.
+Radi ispravne podrške za konstantne objekte, preporučuje se definirati i \texttt{const} verziju tog operatora,
+tj.\ verziju koja se primjenjuje na konstantne objekte te vraća referencu na konstantan element
+(čime se onemogućava njegova promjena).
+\medskip
+
+Primjerice,
+ako klasa \texttt{Niz} sprema niz realnih brojeva tipa \texttt{double},
+želimo nadogradnjom operatora indeksiranja \texttt{[]}
+omogućiti pristup i promjenu pojedinog realnog broja u tom nizu na sljedeći način:
+\begin{minted}{C++}
+Niz nekonstantan;
+nekonstantan[4] = 10.5;
+
+const Niz konstantan;
+cout << konstantan[1] << endl;
+\end{minted}
+
+Pritom se u liniji gornjeg koda pod brojem 2 koristi nekonstantna verzija operatora indeksiranja
+(obzirom da želimo promijeniti element tog niza na \texttt{10.5}),
+dok se u liniji pod brojem 5 koristi konstantna (tj.\ \texttt{const}) verzija
+tog operatora
+(jer se objekt \texttt{konstantan}
+ne smije mijenjati obzirom da je označen kao \texttt{const}).
+
+\begin{zadatak}
+    ...
+\end{zadatak}
