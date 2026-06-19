@@ -1,7 +1,331 @@
 \chapter{Osnove programiranja u C++}
 
 \section{Ulaz i izlaz}
+%cin, cout, usporedba s printf i scanf
+
+\section{Using namespace std;}
+%cemu služi, 
 
 \section{Deklaracija novih tipova podataka}
+Prisjetimo se, u C-u smo strukture deklarirali na sljedeći način:
+\begin{minted}{C}
+    typedef struct{
+        int x, y;
+    } tocka;
+\end{minted}
+Deklaracija struktura u C++ ima vrlo sličnu sintaksu:
+\begin{minted}{C++}
+    struct tocka{
+        int x, y;
+    };
+\end{minted}
+Primijetite \markdown{;} na kraju!
+
+Nakon deklaracije strukture, možemo deklarirati objekt tog tipa, pokazivač na strukturu, polje struktura i slično.
+
+\begin{minted}{C++}
+    #include<iostream>
+
+    using namespace std;
+
+    struct tocka{
+        int x, y;
+    };
+
+    int main(void){
+        tocka P = {1, 2}, Q = {6, 7};
+        tocka *PT = &P;
+        tocka polje_tocaka[2] = {P, Q};
+
+        for(int i = 0 ; i < 2; ++i)
+            cout << "(" << polje_tocaka[i].x << ", ";
+            cout << polje_tocaka[i].y << ")\n";
+        
+        return 0;
+    }
+\end{minted}
+Za sada ćemo sa strukturama u C++-u raditi na isti način kao i sa strukturama u C-u, no već u sljedećem poglavlju vidjet ćemo da strukture u C++ imaju dodatne mogućnosti.
+
+\begin{zadatak}\label{zad:student-basic}
+    \begin{enumerate}
+        \item Deklarirajte strukturu \texttt{Student} koja sadrži tri varijable tipa string: \texttt{ime}, \texttt{prezime} i \texttt{jmbag}.
+        Možete pretpostaviti da će stringovi \texttt{ime} i \texttt{prezime} imati najviše 20 znakova. String \texttt{jmbag} sadrži 10 znakova.
+
+        Struktura također sadrži i niz stringova \texttt{kolegiji} te niz prirodnih brojeva \texttt{ocjene}. Vrijednost \texttt{niz[i]} sadrži ocjenu koju je student ostvario iz kolegija \texttt{kolegij[i]}.
+        Možete pretpostaviti da će biti najviše 30 kolegija te da naziv svakog kolegija ima najviše 20 znakova. Struktura sadrži i prirodan broj \texttt{n} u kojem čuvamo podatak o trenutnom broju ocijenjenih kolegija.
+        
+        \item Implementirajte funkciju 
+        \begin{center}
+            \mintinline{C++}{bool ocijeni(Student &S, char kolegij[31], unsigned ocjena)}
+        \end{center}
+        koja prima adresu studenta te naziv kolegija i pripadnu ocjenu. Funkcija studentu dodaje kolegij i pripadnu ocjenu. Ako student već ima ocjenu iz tog kolegija, 
+        
+        \item Implementirajte funkciju \mintinline{C++}{void info(Student S)} koja ne ekran ispisuje vrijednosti svih varijabli studenta \texttt{S}.
+
+        \item Napišite glavni program koji učitava ime, prezime i JMBAG jednog studenta. Zatim učitava podatke o kolegijima i ocjenama za stvorenog studenta sve dok se za ime kolegija ne učita \texttt{"kraj"} ili dok nije učitano 30 kolegija.
+    \end{enumerate}
+        
+\end{zadatak}
+
+\begin{rjesenje}
+    Cijeli kod spremamo u datoteku \texttt{student.cpp}. 
+    Budući da ćemo u funkciji \texttt{info} ispisivati podatke na ekran te ćemo u glavnom programu učitavati podatke, moramo uključiti zaglavlje \texttt{<iostream>}. 
+    Za rad sa stringova koristit ćemo zaglavlje \texttt{<string.h>}. Također ćemo koristiti i naredbu \markdown{using namespace std;}
+    
+    Deklaracija strukture \texttt{Student} je sljedeća.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #include <iostream>
+        #include <string.h>
+
+        using namespace std;
+
+        struct Student{
+            char ime[21], prezime[21], jmbag[11];
+            char kolegiji[30][21];
+            unsigned ocjene[30], n;
+        };
+    \end{minted}
+
+    Zatim implementiramo funkcije \texttt{ocijeni} i \texttt{info}.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        bool ocijeni(Student &S, char kolegij[31], unsigned ocjena){
+            strcpy(S->kolegiji[n], kolegij);
+            S->ocjene[n] = ocjena;
+            ++S->n;
+            return true;
+        }
+
+        void info(Student S){
+            cout << "Ime i prezime: ";
+            cout << S.ime << " " << S.prezime << endl;
+            cout << "JMBAG: " << S.jmbag << endl;
+            for(int i = 0; i < S.n; ++i){
+                cout << S.kolegiji[i] << ": " << S.ocjene[i] << endl;
+            }
+        }
+    \end{minted}
+    
+    Na kraju napišermo glavni program.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        int main(void){
+            Student S;
+            cout << "Unesite ime, prezime i JMBAG studenta: ";
+            cin << S.ime << S.prezime << S.jmbag;
+            S.n = 0;
+
+            char novi_kolegij[21];
+            unsigned nova_ocjena;
+            while(S.n < 30){
+                cout << "Unesite kolegij: ";
+                cin << novi_kolegij;
+                if(!strcmp(novi_kolegij, "kraj")) break;
+                cout << "Unesite ocjenu: ";
+                cin << nova_ocjena;
+                ocijeni(&S, novi_kolegij, nova_ocjena); 
+            }   
+            info(S);
+
+            return 0;
+        }
+    \end{minted}
+    Program kompajliramo naredbom
+    \begin{minted}{bash}
+        g++ student.cpp -o student    
+    \end{minted}
+    te ga pokrenemo naredbom
+    \begin{minted}{bash}
+        ./student
+    \end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Riješite zadatak~\ref{zad:student-basic} bez pretpostavki na duljinu stringova i broj kolegija.
+    \end{enumerate}
+\end{razmisljanje}
 
 \section{Razdvajanje sučelja od implementacije}
+Do sada su svi naši programi bili sadržani u točno jednoj datoteci. Sada ćemo vidjeti kako program razdvojiti na više djelova. Program razdvajamo na tri dijela: \textbf{sučenje}, \textbf{implementacija} i \textbf{klijentski dio}.
+\medskip
+
+\textbf{Sučelje} je datoteka koja sadrži deklaraciju tipova podataka te deklaracije funkcija. Datoteka ima nastavak \markdown{.h}. Primjerice, datoteka \texttt{tocka.h} bi mogla izgledati ovako:
+\begin{minted}{C++}
+    #pragma once
+    struct Tocka{
+        int x, y;
+    };
+
+    void ispisiTocku(Tocka P);
+    double udaljenostTocaka(Tocka P, Tocka Q);
+\end{minted}
+
+Datoteka \texttt{tocka.h} sadrži deklaraciju strukture \texttt{Tocka} te deklaraciju funkcija \texttt{ispisiTocku} i \texttt{udaljenostTocaka}, no \textbf{ne sadrži} implementaciju navedenih funkcija!
+Primijetimo da smo u prvoj liniji napisali \markdown{\#pragma once}.\textcolor{green}{objasni cemu ovo sluzi}
+
+Napomene:
+\begin{itemize}
+    \item Ako u ovoj koristimo neke vanjske tipove varijabli, potrebno je dodati odgovarajuću \markdown{\#include} naredbu
+    \item U \markdown{.h} datotekama obično ne koristimo \markdown{using namespace std;} naredbu! 
+\end{itemize}
+
+\medskip
+
+\textbf{Implementacija} je datoteka koja sadrži samo implementacija funkcija navedenih u sučelju. Datoteka ima nastavak \markdown{.cpp}. Primjerice, datoteka \texttt{tocka.cpp} koja odgovara sučelju \texttt{tocka.h} izgleda ovako:
+\begin{minted}{C++}
+    #include <iostream>
+    #include <cmath>
+    #include "tocka.h" // sucelje!
+
+    using namespace std;
+
+    void ispisiTocku(Tocka P){
+        cout << "(" << P.x << ", " << P.y << ")";
+    }
+
+    double udaljenostTocaka(Tocka P, Tocka Q){
+        return sqrt(pow(Q.x-P.x, 2) + pow(Q.y-P.y, 2)); 
+    }
+\end{minted}
+
+Primijetimo da smo u prvoj liniji napisali \markdown{\#include "tocka.h"}.\textcolor{green}{obajsni zakaj nam ovo treba}.
+U liniji 12 koristili smo funkciju \texttt{sqrt} koja računa korijen te funkciju \texttt{pow} koja računa potenciju broja. Obje funkcije nalaze se u zaglavlju \texttt{cmath} i zato smo u liniji 2 napisali \markdown{\#include <cmath>}. Zaglavlje \texttt{cmath} sadrži razne matematičke funkcije, a popis i opis svih dostupnih funkcija iz ovog zaglavlja možete pronaći \href{https://cplusplus.com/reference/cmath/}{ovdje}.
+\medskip
+
+\textbf{Klijentski dio} je datoteka koja sadrži glavni program, odnosno \texttt{main} funkciju. 
+U ovoj datoteci koristimo tipove podataka i funkcije iz sučelja. Kako bismo ih mogli koristiti, moramo uključiti sučelje naredbom \markdown{\#include}. Datoteka ima nastavak \markdown{.cpp}.
+Primjerice, datoteka \texttt{main.cpp} koja koristi sučelje \texttt{tocka.h} može izgledati ovako:
+\begin{minted}{C++}
+    #include <iostream>
+    #include "tocka.h" // sucelje
+    
+    using namespace std;
+
+    int main(void){
+        Tocka P = {5, 6}, Q = {9, 10};
+        cout << "Tocka P: "; ispisiTocku(P); cout << endl;
+        cout << "Tocka Q: "; ispisiTocku(Q); cout << endl;
+        cout << "Udaljenost izmedju tocaka P i Q je ";
+        cout << udaljenostTocaka(P,Q) << endl;
+
+        return 0;
+    }
+\end{minted}
+
+Prednost razdvajanja programa na sučelje, implementaciju i klijentski dio je u tome da tipove podataka i funkcije možemo koristi u više različitih programa bez da ih ponovo implementiramo. Dovoljno je samo promijeniti klijentski dio.
+
+
+
+\begin{zadatak}\label{zad:student-razdvojeno}
+    Razdvojite program iz zadatka~\ref{zad:student-basic} na sučelje, implementaciju i klijentski dio.
+\end{zadatak}
+
+\begin{rjesenje}
+    Sučelje spremamo u datoteku \texttt{student.h} čiji sadržaj je sljedeći:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #pragma once
+
+        struct Student{
+            char ime[21], prezime[21], jmbag[11];
+            char kolegiji[30][21];
+            unsigned ocjene[30], n;
+        };
+
+        bool ocijeni(Student &s, char kolegij[21], unsigned ocjena);
+        void info(Student S);
+    \end{minted}
+
+    Implementaciju spremamo u datoteku \texttt{student.cpp} čiji sadržaj je sljedeći:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #include <iostream>
+        #include <string.h>
+        #include "student.h"
+
+        bool ocijeni(Student &S, char kolegij[21], unsigned ocjena){
+            strcpy(S->kolegiji[n], kolegij);
+            S->ocjene[n] = ocjena;
+            ++S->n;
+            return true;
+        }
+
+        void info(Student S){
+            cout << "Ime i prezime: ";
+            cout << S.ime << " " << S.prezime << endl;
+            cout << "JMBAG: " << S.jmbag << endl;
+            for(int i = 0; i < S.n; ++i){
+                cout << S.kolegiji[i] << ": " << S.ocjene[i] << endl;
+            }
+        }
+    \end{minted}
+
+    Konačno, klijentski dio koji koristi strukturu \texttt{Student} te funkciju \texttt{ocijeni} spremamo u datoteku \texttt{main.cpp} čiji sadržaj bi mogao biti sljedeči:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+     #include <iostream>
+     #include <string.h>
+     #include "student.h"
+     
+     using namespace std;
+
+     int main(void){
+        Student S;
+        cout << "Unesite ime, prezime i JMBAG studenta: ";
+        cin << S.ime << S.prezime << S.jmbag;
+        S.n = 0;
+
+        char novi_kolegij[21];
+        unsigned nova_ocjena;
+        while(S.n < 30){
+            cout << "Unesite kolegij: ";
+            cin << novi_kolegij;
+            if(!strcmp(novi_kolegij, "kraj")) break;
+            cout << "Unesite ocjenu: ";
+            cin << nova_ocjena;
+            ocijeni(&S, novi_kolegij, nova_ocjena); 
+        }
+        info(S);
+
+        return 0;
+     }
+    \end{minted}
+    Na kraju, program kompajliramo naredbom
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{bash}
+        g++ student.cpp main.cpp -o main
+    \end{minted}
+    te ga pokrenemo naredbom
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{bash}
+        ./main
+    \end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Zašto smo u zadatku~\ref{zad:student-razdvojeno} u datotekama \texttt{student.cpp} i \texttt{main.cpp} sučelje \texttt{student.h} uključili naredbom \markdown{\#include "student.h"},
+        a sučelja \texttt{iostream} i \texttt{string.h} uključili naredbama \markdown{\#include <iostream>} i \markdown{\#include <string.h>}? Drugim rječima, koja je razlika između sučelja navedenog u \markdown{" "} i sučelja navedenog u \markdown{<>}? 
+    \end{enumerate}
+\end{razmisljanje}

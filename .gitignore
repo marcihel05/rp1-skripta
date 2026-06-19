@@ -6,3 +6,8 @@ _minted-main/
 *.aux
 *.out
 *.toc
+*.fls
+*.fdb_latexmk
+*.gz
+.vscode/
+

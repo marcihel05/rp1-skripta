@@ -86,9 +86,13 @@
     linenos,
     breaklines,
     frame=single,
-    framesep=3mm,
+    framesep=3mm,   
     autogobble
 }
+
+\usepackage{xcolor}
+
+\newcommand{\markdown}[1]{\texttt{\colorbox{gray!15}{#1}}}
 
 % --------------------
 % ZADACI, RJEŠENJA I PITANJA ZA RAZMIŠLJANJE
@@ -226,11 +230,11 @@
 \input{chapters/05_copy_kon}
 \input{chapters/06_genericko}
 \input{chapters/07_stl}
-%\input{chapters/08_naprednije_znacajke}
-%\input{chapters/09_objektno_programiranje}
-%\input{chapters/10_napredno_objektno}
+\input{chapters/08_naprednije_znacajke}
+\input{chapters/09_objektno_programiranje}
+\input{chapters/10_napredno_objektno}
 \input{chapters/11_friend_i_operatori}
-%\input{chapters/12_funktori}
+\input{chapters/12_funktori}
 
 % --------------------
 % LITERATURA

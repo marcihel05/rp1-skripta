@@ -1,8 +1,14 @@
 \chapter{Uvod u radno okruženje}
 
 \section{Općenite informacije i potrebni alati}
+%vs code, ekstenzije
 
 \section{Linux terminal i osnovne naredbe}
+%cd, mkdir, ls, rm, rmdir, rmdir -f
+
+    \begin{minted}{bash}
+        
+    \end{minted}
 
 \section{Kompilacija i pokretanje C++ programa}
 
@@ -16,3 +22,24 @@ int main() {
     return 0;
 }
 \end{minted}
+
+Program koji se nalazi u datoteci \texttt{hello.cpp} kompajliramo iz terminala na sljedeći način.
+Prvo se naredbom \markdown{cd} pozicioniramo u direktorij u kojem se nalazi datoteka \texttt{hello.cpp}. Nakon toga kompajliramo program sljedećom naredbom u terminalu:
+\begin{minted}{bash}
+    g++ hello.cpp -o hello
+\end{minted}
+
+
+
+Gornja naredba u pozicioniranom direktoriju stvara izvršnu datoteku naziva \texttt{hello.o} koju pokrećemo sljedećom naredbom u terminalu:
+\begin{minted}{bash}
+    ./hello
+\end{minted}
+
+Ako želimo specificirati koji standard C++-a želimo koristiti, to radimo dodavanjem opcije \markdown{-std=c++\textit{standard}}, gdje je \textit{standard} oznaka C++ standarda (na primjer 11, 14, 17,\dots).
+Primjerice, ako želimo specifično koristiti standard C++11, tada program kompjaliramo sljedećom naredbom:
+
+\begin{minted}{bash}
+    g++ hello.cpp -std=c++11 -o hello
+\end{minted}
+
