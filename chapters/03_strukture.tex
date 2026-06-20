@@ -1,9 +1,239 @@
 \chapter{Strukture, funkcije i dinamička memorija}
 
-\section{Strukture}
+%\section{Strukture}
 
 \section{Funkcija kao element strukture}
+U prethodnom smo poglavlju promatrali strukture kao način grupiranja povezanih podataka te smo nad njima definirali globalne funkcije koje su primale strukture kao argumente. Na taj smo način odvojili podatke od operacija koje nad njima djeluju.
+
+U ovom poglavlju napravit ćemo prirodan korak dalje: funkcije koje rade nad strukturom “premještamo” unutar same strukture. Time operacije postaju sastavni dio tipa na koji se odnose, umjesto da budu definirane izvan njega.
+
+Takve funkcije nazivaju se \textbf{metode} (ili funkcije-članice) i one imaju izravan pristup podacima strukture bez potrebe za eksplicitnim prosljeđivanjem kao argumenta. Na taj se način postiže bolja organizacija koda, veća preglednost te jasnije povezivanje podataka i operacija koje nad njima djeluju.
+
+Ovaj pristup predstavlja prvi korak prema objektno orijentiranom programiranju, gdje se podaci i funkcionalnosti nad njima objedinjuju u jednu cjelinu. Time omogućavamo da se svaki objekt "brine sam za sebe".
+
+%dodaj primjer prije zadatka
+
+
+\begin{zadatak}\label{zad:student-funkcije-unutar}
+    Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-razdvojeno} na način da funkcije \texttt{ocijeni} i \texttt{info} budu funkcije-članice strukture \texttt{Student}. Implementaciju funkcija napravite izvan strukture, odnosno razdvojite sučelje od implementacije.
+\end{zadatak}
+
+\begin{rjesenje}
+Sadržaj datoteke \texttt{student.h} sada je sljedeći:
+ \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #pragma once
+
+        struct Student{
+            char ime[21], prezime[21], jmbag[11];
+            char kolegiji[30][21];
+            unsigned ocjene[30], n;
+
+            bool ocijeni(char kolegij[21], unsigned ocjena);
+            void info();
+        };
+    \end{minted}
+    Primijetimo da funkcija \texttt{ocijeni} više ne prima pokazivač na objekt tipa \texttt{Student}, nego samo naziv kolegija i ocjenu.   
+
+    Datoteka \texttt{student.cpp} izmijenjena je na sljedeći način:
+    
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #include <iostream>
+        #include <string.h>
+        #include "student.h"
+
+        bool Student::ocijeni(char kolegij[21], unsigned ocjena){
+            int i;
+            for(i = 0; i < n; ++i){
+                if(!strcmp(kolegiji[i], kolegij)) break;
+            }
+            if(i < n){ // kolegij vec postoji
+                ocjene[i] = ocjena;
+                return false;
+            }
+            strcpy(kolegiji[n], kolegij);
+            ocjene[n] = ocjena;
+            ++n;
+            return true;
+        }
+
+        void Student::info(){
+            cout << "Ime i prezime: ";
+            cout << ime << " " << prezime << endl;
+            cout << "JMBAG: " << jmbag << endl;
+            for(int i = 0; i < S.n; ++i){
+                cout << kolegiji[i] << ": " << ocjene[i] << endl;
+            }
+        }
+    \end{minted}
+\end{rjesenje}
 
 \section{Konstruktori i destruktori}
+Do sada smo objekte naših struktura stvarali tako da smo najprije deklarirali varijablu, a zatim pojedinačno postavljali vrijednosti njezinih članova. 
+Takav pristup je jednostavan, ali kod složenijih tipova podataka može biti nepraktičan i podložan greškama. Primjerice, lako se može dogoditi da zaboravimo inicijalizirati neki član ili da objekt ostane u nedosljednom stanju.
+
+Kako bi se osiguralo da je svaki objekt pravilno inicijaliziran odmah nakon stvaranja, C++ omogućuje definiranje posebnih funkcija koje se automatski pozivaju prilikom stvaranja i uništavanja objekata. Funkcija koja se poziva pri stvaranju objekta naziva se \textbf{konstruktor}, a funkcija koja se poziva pri njegovom uništavanju naziva \textbf{destruktor}.
+\medskip
+
+Konstruktori omogućuju inicijalizaciju članova objekta i uspostavljanje početnog stanja objekta. Konstruktor \textbf{ima isto ime kao i struktura} te \textbf{nema povratnih vrijednosti}.
+\begin{minted}{C++}
+    struct Tocka{
+        int x, y;
+
+        Tocka(){
+            x = y = 0;
+        }
+    };
+\end{minted}
+\medskip
+
+Destruktori služe za oslobađanje resursa i izvođenje završnih radnji prije nego što objekt prestane postojati. 
+%Iako su kod jednostavnih struktura njihove mogućnosti na prvi pogled skromne, konstruktori i destruktori predstavljaju jedan od temeljnih mehanizama objektno orijentiranog programiranja te imaju ključnu ulogu u upravljanju životnim ciklusom objekata.
+
+%U ovom ćemo poglavlju upoznati sintaksu konstruktora i destruktora te proučiti kada se oni automatski pozivaju i kako ih možemo koristiti za sigurniju i pregledniju organizaciju programa.
+\begin{zadatak}\label{zad:student-konstruktor}
+    Strukturi \texttt{Student} iz zadatka~\ref{zad:student-funkcije-unutar} dodajte konstruktor bez parametra te konstruktor koji prima ime, prezime i JMBAG studenta. 
+    Implementirajte i destruktor koji na ekran ispisuje vrijednosti svih varijabli strukture.
+\end{zadatak}
+
+\begin{rjesenje}
+    Strukturi \texttt{Student} u datoteci \texttt{student.h} dodajemo dva konstruktora i destruktor pa je sadržaj datoteke sljedeći:
+ \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #pragma once
+
+        struct Student{
+            char ime[21], prezime[21], jmbag[11];
+            char kolegiji[30][21];
+            unsigned ocjene[30], n;
+
+            Student();
+            Student(char _ime[21], char _prezime[21], char _jmbag[11]):
+
+            bool ocijeni(char kolegij[21], unsigned ocjena);
+            void info();
+
+            ~Student();
+        };
+    \end{minted}
+
+    Implementaciju dvaju konstruktora i destruktora dodajemo u datoteku \texttt{student.cpp}. Implementacija konstruktora bez parametara je sljedeća.
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Student::Student(){
+            ime[0] = prezime[0] = jmbag[0] = '\0';
+            n = 0;
+        }
+    \end{minted}
+
+    Zatim implementiramo konstruktor s parametrima.
+      \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Student::Student(char _ime[21], char _prezime[21], char _jmbag[11]){
+            strcpy(ime, _ime);
+            strcpy(prezime, _prezime);
+            strcpy(jmbag, _jmbag);
+            n = 0;
+        }
+    \end{minted}
+
+    Na kraju implementiramo destruktor.
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Student::~Student(){
+            info();
+        }
+    \end{minted}
+
+\end{rjesenje}
 
 \section{Dinamička alokacija memorije}
+\begin{zadatak}
+    Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-konstruktor} tako da nema ograničenja na broj kolegija. Pobrinite se za ispravnu alokaciju i dealokaciju memorije. 
+\end{zadatak}
+
+\begin{rjesenje}
+    Umjesto \mintinline{C++}{char kolegiji[30][21];}, pišemo \mintinline{C++}{char *kolegiji[21];}, odnosno polje \texttt{kolegiji} postaje dinamički alocirano polje stringova (stringovi su i dalje fiksne duljine). Također, budući da možemo imati proizvoljno mnogo kolegija, polje \texttt{ocijene} također mora biti dinamički alocirano. Dakle, umjesto \mintinline{C++}{unsigned ocjene[30]}, pišemo \texttt{unsigned *ocjene}. Ovo su jedine dvije izmjene koje je potrebno napraviti u datoteci \texttt{student.h}.
+    
+    Zatim treba promijeniti implementaciju oba konstruktora na način da varijablu \texttt{kolegiji} postave na nul-pokazivač.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+         Student::Student(){
+            ime[0] = prezime[0] = jmbag[0] = '\0';
+            n = 0;
+            kolegiji = ocjene = nullprt;
+        }
+
+        Student::Student(char _ime[21], char _prezime[21], char _jmbag[11]){
+            strcpy(ime, _ime);
+            strcpy(prezime, _prezime);
+            strcpy(jmbag, _jmbag);
+            n = 0;
+            kolegiji = ocjene = nullprt;
+        }
+    \end{minted}
+
+    Potrebno je promijeniti i implementaciju funkcija \texttt{ocijeni}. Funkcija mora alocirati memoriju za novi kolegij. Budući da u C++-u ne postoji odgovarajuća verzija funkcije \texttt{realloc}, moramo koristiti kombinaciju naredbi \texttt{new} i \texttt{delete}.
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+         bool Student::ocijeni(char kolegij[21], unsigned ocjena){
+            int i;
+            for(i = 0; i < n; ++i){
+                if(!strcmp(kolegiji[i], kolegij)) break;
+            }
+            if(i < n){ // kolegij vec postoji
+                ocjene[i] = ocjena;
+                return false;
+            }
+
+            unsigned ocjene_kopija = new unsigned[n+1];
+            char *kolegiji_kopija = new char[21][n+1];
+            for(int i = 0; i < n; ++i){
+                ocjene_kopija[i] = ocjene[i];
+                strcpy(kolegiji_kopija[i], kolegiji[i]);
+            }
+            ocjene[n] = ocjena;
+            strcpy(novi_kolegiji[n], kolegij);
+            delete[] ocjene;
+            delete[] kolegiji;
+            ocjene = ocjene_kopija;
+            kolegiji = kolegiji_kopija;
+            ++n;
+            return true;
+        }
+    \end{minted}
+    
+    Još je potrebno modificirati destruktor koji se sada brine za dealokaciju zauzete memorije.
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+         Student::~Student(char kolegij[21], unsigned ocjena){
+            if(kolegiji != nullptr) delete[] kolegiji;
+            if(ocjene != nullptr) delete[] ocjene;
+        }
+    \end{minted}
+
+\end{rjesenje}
+
+Napomenimo još jednom važnost korištenja naredbi \texttt{new} i \texttt{delete} umjesto funkcija \texttt{malloc}, \texttt{realloc} i \texttt{free}.
+%dodaj kompliciraniji primjer
