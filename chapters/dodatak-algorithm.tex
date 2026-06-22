@@ -1,0 +1,507 @@
+\appendix
+\chapter{Pregled zaglavlja \texttt{<algorithm>} (C++11)}
+Ovaj dodatak daje pregled algoritama,
+odnosno generičkih funkcija koje uglavnom koriste iteratore i funktore,
+a koje su definirane u C++11 zaglavlju \texttt{<algorithm>}.
+Za svaku funkciju navedeno je njeno ime, kratak opis
+te jedan jednostavan primjer njene upotrebe.
+
+\begin{itemize}
+\item \textbf{\texttt{adjacent\_find}}\newline
+Pronalazi prvi par susjednih jednakih elemenata.
+\begin{minted}{C++}
+auto it = std::adjacent_find(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{all\_of}}\newline
+Provjerava zadovoljavaju li svi elementi uvjet.
+\begin{minted}{C++}
+bool b = std::all_of(v.begin(), v.end(), [](int x){ return x > 0; });
+\end{minted}
+
+\item \textbf{\texttt{any\_of}}\newline
+Provjerava postoji li barem jedan element koji zadovoljava uvjet.
+\begin{minted}{C++}
+bool b = std::any_of(v.begin(), v.end(), [](int x){ return x < 0; });
+\end{minted}
+
+\item \textbf{\texttt{binary\_search}}\newline
+Provjerava postoji li element u sortiranom rasponu.
+\begin{minted}{C++}
+bool b = std::binary_search(v.begin(), v.end(), 10);
+\end{minted}
+
+\item \textbf{\texttt{copy}}\newline
+Kopira elemente u drugi raspon.
+\begin{minted}{C++}
+std::copy(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{copy\_backward}}\newline
+Kopira elemente unatrag.
+\begin{minted}{C++}
+std::copy_backward(v.begin(), v.end(), u.end());
+\end{minted}
+
+\item \textbf{\texttt{copy\_if}}\newline
+Kopira samo elemente koji zadovoljavaju uvjet.
+\begin{minted}{C++}
+std::copy_if(v.begin(), v.end(), std::back_inserter(u), [](int x){ return x > 0; });
+\end{minted}
+
+\item \textbf{\texttt{copy\_n}}\newline
+Kopira prvih n elemenata.
+\begin{minted}{C++}
+std::copy_n(v.begin(), 5, u.begin());
+\end{minted}
+
+\item \textbf{\texttt{count}}\newline
+Broji pojavljivanja vrijednosti.
+\begin{minted}{C++}
+int n = std::count(v.begin(), v.end(), 5);
+\end{minted}
+
+\item \textbf{\texttt{count\_if}}\newline
+Broji elemente koji zadovoljavaju uvjet.
+\begin{minted}{C++}
+int n = std::count_if(v.begin(), v.end(), [](int x){ return x % 2 == 0; });
+\end{minted}
+
+\item \textbf{\texttt{equal}}\newline
+Provjerava jednakost dvaju raspona.
+\begin{minted}{C++}
+bool b = std::equal(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{equal\_range}}\newline
+Daje raspon jednakih elemenata u sortiranom nizu.
+\begin{minted}{C++}
+auto p = std::equal_range(v.begin(), v.end(), 5);
+\end{minted}
+
+\item \textbf{\texttt{fill}}\newline
+Popunjava raspon vrijednošću.
+\begin{minted}{C++}
+std::fill(v.begin(), v.end(), 0);
+\end{minted}
+
+\item \textbf{\texttt{fill\_n}}\newline
+Popunjava prvih n elemenata.
+\begin{minted}{C++}
+std::fill_n(v.begin(), 10, 0);
+\end{minted}
+
+\item \textbf{\texttt{find}}\newline
+Pronalazi prvi element zadane vrijednosti.
+\begin{minted}{C++}
+auto it = std::find(v.begin(), v.end(), 5);
+\end{minted}
+
+\item \textbf{\texttt{find\_end}}\newline
+Pronalazi zadnje pojavljivanje podraspona.
+\begin{minted}{C++}
+auto it = std::find_end(v.begin(), v.end(), p.begin(), p.end());
+\end{minted}
+
+\item \textbf{\texttt{find\_first\_of}}\newline
+Pronalazi prvi element koji pripada drugom rasponu.
+\begin{minted}{C++}
+auto it = std::find_first_of(v.begin(), v.end(), p.begin(), p.end());
+\end{minted}
+
+\item \textbf{\texttt{find\_if}}\newline
+Pronalazi prvi element koji zadovoljava uvjet.
+\begin{minted}{C++}
+auto it = std::find_if(v.begin(), v.end(), [](int x){ return x > 10; });
+\end{minted}
+
+\item \textbf{\texttt{find\_if\_not}}\newline
+Pronalazi prvi element koji ne zadovoljava uvjet.
+\begin{minted}{C++}
+auto it = std::find_if_not(v.begin(), v.end(), [](int x){ return x > 0; });
+\end{minted}
+
+\item \textbf{\texttt{for\_each}}\newline
+Primjenjuje funkciju na sve elemente.
+\begin{minted}{C++}
+std::for_each(v.begin(), v.end(), [](int x){ std::cout << x; });
+\end{minted}
+
+\item \textbf{\texttt{generate}}\newline
+Generira vrijednosti pomoću funkcije.
+\begin{minted}{C++}
+std::generate(v.begin(), v.end(), gen);
+\end{minted}
+
+\item \textbf{\texttt{generate\_n}}\newline
+Generira prvih n vrijednosti.
+\begin{minted}{C++}
+std::generate_n(v.begin(), 5, gen);
+\end{minted}
+
+\item \textbf{\texttt{includes}}\newline
+Provjerava sadrži li raspon drugi sortiran raspon.
+\begin{minted}{C++}
+bool b = std::includes(a.begin(), a.end(), b.begin(), b.end());
+\end{minted}
+
+\item \textbf{\texttt{inplace\_merge}}\newline
+Spaja dva sortirana dijela.
+\begin{minted}{C++}
+std::inplace_merge(v.begin(), mid, v.end());
+\end{minted}
+
+\item \textbf{\texttt{is\_heap}}\newline
+Provjerava je li raspon gomila (heap).
+\begin{minted}{C++}
+bool b = std::is_heap(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{is\_heap\_until}}\newline
+Pronalazi kraj heap strukture.
+\begin{minted}{C++}
+auto it = std::is_heap_until(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{is\_partitioned}}\newline
+Provjerava je li raspon particioniran.
+\begin{minted}{C++}
+bool b = std::is_partitioned(v.begin(), v.end(), pred);
+\end{minted}
+
+\item \textbf{\texttt{is\_permutation}}\newline
+Provjerava je li permutacija drugog raspona.
+\begin{minted}{C++}
+bool b = std::is_permutation(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{is\_sorted}}\newline
+Provjerava je li sortiran.
+\begin{minted}{C++}
+bool b = std::is_sorted(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{is\_sorted\_until}}\newline
+Pronalazi kraj sortiranog dijela.
+\begin{minted}{C++}
+auto it = std::is_sorted_until(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{iter\_swap}}\newline
+Zamjenjuje elemente na iteratorima.
+\begin{minted}{C++}
+std::iter_swap(it1, it2);
+\end{minted}
+
+\item \textbf{\texttt{lexicographical\_compare}}\newline
+Leksičko uspoređivanje raspona.
+\begin{minted}{C++}
+bool b = std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+\end{minted}
+
+\item \textbf{\texttt{lower\_bound}}\newline
+Pronalazi prvu poziciju elementa.
+\begin{minted}{C++}
+auto it = std::lower_bound(v.begin(), v.end(), 10);
+\end{minted}
+
+\item \textbf{\texttt{make\_heap}}\newline
+Stvara heap strukturu.
+\begin{minted}{C++}
+std::make_heap(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{max}}\newline
+Vraća veći od dva elementa.
+\begin{minted}{C++}
+auto m = std::max(a, b);
+\end{minted}
+
+\item \textbf{\texttt{max\_element}}\newline
+Pronalazi najveći element.
+\begin{minted}{C++}
+auto it = std::max_element(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{merge}}\newline
+Spaja dva sortirana raspona.
+\begin{minted}{C++}
+std::merge(a.begin(), a.end(), b.begin(), b.end(), out.begin());
+\end{minted}
+
+\item \textbf{\texttt{min}}\newline
+Vraća manji od dva elementa.
+\begin{minted}{C++}
+auto m = std::min(a, b);
+\end{minted}
+
+\item \textbf{\texttt{min\_element}}\newline
+Pronalazi najmanji element.
+\begin{minted}{C++}
+auto it = std::min_element(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{minmax}}\newline
+Vraća i min i max.
+\begin{minted}{C++}
+auto p = std::minmax(a, b);
+\end{minted}
+
+\item \textbf{\texttt{minmax\_element}}\newline
+Pronalazi min i max element.
+\begin{minted}{C++}
+auto p = std::minmax_element(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{mismatch}}\newline
+Pronalazi prvo neslaganje dvaju raspona.
+\begin{minted}{C++}
+auto p = std::mismatch(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{move}}\newline
+Premješta elemente.
+\begin{minted}{C++}
+std::move(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{move\_backward}}\newline
+Premješta elemente unatrag.
+\begin{minted}{C++}
+std::move_backward(v.begin(), v.end(), u.end());
+\end{minted}
+
+\item \textbf{\texttt{next\_permutation}}\newline
+Generira sljedeću permutaciju.
+\begin{minted}{C++}
+std::next_permutation(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{none\_of}}\newline
+Provjerava da nijedan element ne zadovoljava uvjet.
+\begin{minted}{C++}
+bool b = std::none_of(v.begin(), v.end(), pred);
+\end{minted}
+
+\item \textbf{\texttt{nth\_element}}\newline
+Postavlja n-ti element na ispravno mjesto.
+\begin{minted}{C++}
+std::nth_element(v.begin(), v.begin()+k, v.end());
+\end{minted}
+
+\item \textbf{\texttt{partial\_sort}}\newline
+Djelomično sortira raspon.
+\begin{minted}{C++}
+std::partial_sort(v.begin(), v.begin()+k, v.end());
+\end{minted}
+
+\item \textbf{\texttt{partial\_sort\_copy}}\newline
+Kopira i sortira dio raspona.
+\begin{minted}{C++}
+std::partial_sort_copy(v.begin(), v.end(), u.begin(), u.end());
+\end{minted}
+
+\item \textbf{\texttt{partition}}\newline
+Dijeli raspon prema uvjetu.
+\begin{minted}{C++}
+std::partition(v.begin(), v.end(), pred);
+\end{minted}
+
+\item \textbf{\texttt{partition\_copy}}\newline
+Kopira u dvije skupine.
+\begin{minted}{C++}
+std::partition_copy(v.begin(), v.end(), a.begin(), b.begin(), pred);
+\end{minted}
+
+\item \textbf{\texttt{partition\_point}}\newline
+Pronalazi granicu particije.
+\begin{minted}{C++}
+auto it = std::partition_point(v.begin(), v.end(), pred);
+\end{minted}
+
+\item \textbf{\texttt{pop\_heap}}\newline
+Uklanja element iz heap-a.
+\begin{minted}{C++}
+std::pop_heap(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{prev\_permutation}}\newline
+Generira prethodnu permutaciju.
+\begin{minted}{C++}
+std::prev_permutation(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{random\_shuffle}}\newline
+Nasumično miješa elemente.
+\begin{minted}{C++}
+std::random_shuffle(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{remove}}\newline
+Uklanja elemente logički.
+\begin{minted}{C++}
+v.erase(std::remove(v.begin(), v.end(), 0), v.end());
+\end{minted}
+
+\item \textbf{\texttt{remove\_copy}}\newline
+Kopira bez određenih elemenata.
+\begin{minted}{C++}
+std::remove_copy(v.begin(), v.end(), u.begin(), 0);
+\end{minted}
+
+\item \textbf{\texttt{remove\_copy\_if}}\newline
+Kopira uz uvjet.
+\begin{minted}{C++}
+std::remove_copy_if(v.begin(), v.end(), u.begin(), pred);
+\end{minted}
+
+\item \textbf{\texttt{remove\_if}}\newline
+Uklanja elemente po uvjetu.
+\begin{minted}{C++}
+v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
+\end{minted}
+
+\item \textbf{\texttt{replace}}\newline
+Zamjenjuje vrijednosti.
+\begin{minted}{C++}
+std::replace(v.begin(), v.end(), 0, 1);
+\end{minted}
+
+\item \textbf{\texttt{replace\_copy}}\newline
+Kopira uz zamjenu.
+\begin{minted}{C++}
+std::replace_copy(v.begin(), v.end(), u.begin(), 0, 1);
+\end{minted}
+
+\item \textbf{\texttt{replace\_copy\_if}}\newline
+Kopira uz uvjetnu zamjenu.
+\begin{minted}{C++}
+std::replace_copy_if(v.begin(), v.end(), u.begin(), pred, 1);
+\end{minted}
+
+\item \textbf{\texttt{replace\_if}}\newline
+Zamjenjuje po uvjetu.
+\begin{minted}{C++}
+std::replace_if(v.begin(), v.end(), pred, 1);
+\end{minted}
+
+\item \textbf{\texttt{reverse}}\newline
+Obrće redoslijed.
+\begin{minted}{C++}
+std::reverse(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{reverse\_copy}}\newline
+Kopira obrnuto.
+\begin{minted}{C++}
+std::reverse_copy(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{rotate}}\newline
+Rotira elemente.
+\begin{minted}{C++}
+std::rotate(v.begin(), v.begin()+k, v.end());
+\end{minted}
+
+\item \textbf{\texttt{rotate\_copy}}\newline
+Kopira rotirano.
+\begin{minted}{C++}
+std::rotate_copy(v.begin(), v.begin()+k, v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{search}}\newline
+Pretražuje podraspon.
+\begin{minted}{C++}
+auto it = std::search(v.begin(), v.end(), p.begin(), p.end());
+\end{minted}
+
+\item \textbf{\texttt{search\_n}}\newline
+Traži n uzastopnih elemenata.
+\begin{minted}{C++}
+auto it = std::search_n(v.begin(), v.end(), 3, 5);
+\end{minted}
+
+\item \textbf{\texttt{set\_difference}}\newline
+Razlika skupova.
+\begin{minted}{C++}
+std::set_difference(a.begin(), a.end(), b.begin(), b.end(), out.begin());
+\end{minted}
+
+\item \textbf{\texttt{set\_intersection}}\newline
+Presjek skupova.
+\begin{minted}{C++}
+std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), out.begin());
+\end{minted}
+
+\item \textbf{\texttt{set\_symmetric\_difference}}\newline
+Simetrična razlika.
+\begin{minted}{C++}
+std::set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), out.begin());
+\end{minted}
+
+\item \textbf{\texttt{set\_union}}\newline
+Unija skupova.
+\begin{minted}{C++}
+std::set_union(a.begin(), a.end(), b.begin(), b.end(), out.begin());
+\end{minted}
+
+\item \textbf{\texttt{shuffle}}\newline
+Nasumično miješanje.
+\begin{minted}{C++}
+std::shuffle(v.begin(), v.end(), gen);
+\end{minted}
+
+\item \textbf{\texttt{sort}}\newline
+Sortira elemente.
+\begin{minted}{C++}
+std::sort(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{stable\_partition}}\newline
+Stabilna particija.
+\begin{minted}{C++}
+std::stable_partition(v.begin(), v.end(), pred);
+\end{minted}
+
+\item \textbf{\texttt{stable\_sort}}\newline
+Stabilno sortiranje.
+\begin{minted}{C++}
+std::stable_sort(v.begin(), v.end());
+\end{minted}
+
+\item \textbf{\texttt{swap}}\newline
+Zamjena vrijednosti.
+\begin{minted}{C++}
+std::swap(a, b);
+\end{minted}
+
+\item \textbf{\texttt{swap\_ranges}}\newline
+Zamjena raspona.
+\begin{minted}{C++}
+std::swap_ranges(a.begin(), a.end(), b.begin());
+\end{minted}
+
+\item \textbf{\texttt{transform}}\newline
+Transformira elemente.
+\begin{minted}{C++}
+std::transform(v.begin(), v.end(), v.begin(), op);
+\end{minted}
+
+\item \textbf{\texttt{unique}}\newline
+Uklanja uzastopne duplikate.
+\begin{minted}{C++}
+v.erase(std::unique(v.begin(), v.end()), v.end());
+\end{minted}
+
+\item \textbf{\texttt{unique\_copy}}\newline
+Kopira bez duplikata.
+\begin{minted}{C++}
+std::unique_copy(v.begin(), v.end(), u.begin());
+\end{minted}
+
+\item \textbf{\texttt{upper\_bound}}\newline
+Pronalazi gornju granicu.
+\begin{minted}{C++}
+auto it = std::upper_bound(v.begin(), v.end(), 10);
+\end{minted}
+\end{itemize}

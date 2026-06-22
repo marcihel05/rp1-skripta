@@ -1,5 +1,790 @@
-\chapter{Funkcijski objekti i STL algoritmi}
+\chapter{Algoritmi i funktori u STL-u}
 
-\section{Funktori}
 
-\section{Algoritmi u STL-u}
+Sadržaj \textit{Ucenik.h} datoteke:
+
+\begin{minted}{C++}
+#pragma once
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+class Ucenik {
+friend std::ostream& operator<<(std::ostream& os,
+        const Ucenik& ucenik);
+    
+private: 
+    std::string ime;
+    std::map<std::string,std::vector<unsigned>> ocjene;
+
+public:
+    Ucenik(std::string ime = "nepoznat");
+    double prosjek() const;
+
+    std::vector<unsigned>& operator[](const std::string& predmet);
+    const std::vector<unsigned>& operator[]
+        (const std::string& predmet) const;
+};
+
+std::vector<unsigned>& operator+=(std::vector<unsigned>& vektor, 
+        unsigned element);
+\end{minted}
+
+Sadržaj \textit{Ucenik.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "Ucenik.h"
+
+using namespace std;
+
+Ucenik::Ucenik(string ime)
+    : ime(ime) {}
+
+double Ucenik::prosjek() const {
+    unsigned brojac_predmet, brojac = 0;
+    double zbroj_predmet, zbroj = 0;
+    map<string,vector<unsigned>>::const_iterator it;
+    vector<unsigned>::const_iterator it_ocjene;
+    for(it=ocjene.begin(); it!=ocjene.end(); ++it) {
+        brojac++;
+        brojac_predmet = 0;
+        zbroj_predmet = 0;
+        for(it_ocjene = it->second.begin();
+            it_ocjene != it->second.end(); ++it_ocjene) {
+                brojac_predmet++;
+                zbroj_predmet += *it_ocjene;
+        }
+        if(brojac_predmet > 0)
+            zbroj += (zbroj_predmet / brojac_predmet);
+    }
+    return (brojac > 0) ? (zbroj / brojac) : 0;
+}
+
+ostream& operator<<(ostream& os, const Ucenik& ucenik)
+{
+    os << ucenik.ime << endl;
+    
+    map<string,vector<unsigned>>::const_iterator it;
+    vector<unsigned>::const_iterator it_ocjene;
+
+    for (it = ucenik.ocjene.begin(); 
+        it != ucenik.ocjene.end(); ++it) {
+        os << "\t" << it->first << ": ";
+
+        for (it_ocjene = it->second.begin();
+            it_ocjene != it->second.end(); ++it_ocjene) {
+                os << *it_ocjene << ' ';
+        }
+        
+        os << endl;
+    }
+
+    return os;
+}
+
+vector<unsigned>& Ucenik::operator[](const string& predmet) {
+    return ocjene[predmet];
+}
+
+const vector<unsigned>& Ucenik::operator[]
+    (const string& predmet) const {
+        return ocjene.at(predmet);
+}
+
+
+std::vector<unsigned>& operator+=
+    (std::vector<unsigned>& vektor, unsigned element) {
+        vektor.push_back(element);
+        return vektor;
+}
+\end{minted}
+
+Sadržaj \textit{main.cpp} datoteke:
+
+\begin{minted}{C++}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+#include "Ucenik.h"
+
+using namespace std;
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+
+    john["Geografija"] += 5;
+    (jane["Matematika"] += 5) += 4;
+    jane["Filozofija"] += 3;
+    jane["Geografija"] += 4;
+    smith["Matematika"] += 4;
+    smith["Fizika"] += 3;
+    garcia["Fizika"] += 5;
+
+    vector<Ucenik> ucenici{john, jane, smith, garcia};
+
+    vector<Ucenik>::iterator it;
+    for(it = ucenici.begin(); it != ucenici.end(); ++it) {
+            cout << *it << endl;
+    }
+
+    return 0;
+}
+\end{minted}
+
+
+\section{Sortiranje elemenata vektora}
+
+Standardna biblioteka C++-a sadrži mnoge korisne funkcije,
+poput funkcije \texttt{std::sort}, definirane u zaglavlju 
+\texttt{algorithm}, 
+koja omogućuje učinkovito sortiranje elemenata spremnika poput vektora. 
+Funkcija prima dva iteratora koji određuju raspon elemenata koji se sortira. Primjerice,
+ako je \texttt{vek} vektor čiji su elementi podaci nekog ugrađenog tipa
+(poput tipova \texttt{int}, \texttt{double} ili \texttt{std::string})
+tada se pozivom
+\begin{minted}{C++}
+std::sort(vek.begin(), vek.end());
+\end{minted}
+sortiraju svi elementi tog vektora u uzlaznom poretku.
+\medskip 
+
+Za ugrađene tipove već su definirani operatori usporedbe. 
+Međutim, kod korisnički definiranih klasa potrebno je 
+definirati način usporedbe objekata.
+To se može, primjerice, učiniti definiranjem operatora \texttt{<} za tu klasu.
+
+\begin{zadatak}\label{zad:sortiranje-operator}
+Dopunite klasu \texttt{Ucenik} iz \textcolor{red}{zadatka ...}
+tako da je svaki vektor učenika \texttt{ucenici} moguće sortirati uzlazno po imenu učenika
+pozivom funkcije
+\begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}   
+std::sort(ucenici.begin(), ucenici.end());
+\end{minted}
+Napišite i program za testiranje.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Operator \texttt{<} za usporedbu dva objekta tipa \texttt{Ucenik}
+    implementirat ćemo kao funkciju članicu te klase.
+    Dodajemo deklaraciju tog operatora u klasu \texttt{Ucenik}
+    (u \textit{Ucenik.h} datoteku):
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++} 
+class Ucenik {
+    ...
+public:
+    bool operator<(const Ucenik& ucenik) const;
+    ...
+};
+    \end{minted}
+    Implementaciju upravo deklariranog operatora dodajemo u \textit{Ucenik.cpp} datoteku:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}  
+bool Ucenik::operator<(const Ucenik& ucenik) const { 
+    return ime < ucenik.ime; 
+}
+    \end{minted}
+    Sadržaj \textit{main.cpp} datoteke s programom za testiranje:
+\begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include "Ucenik.h"
+
+using namespace std;
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+    vector<Ucenik> ucenici{john, jane, smith, garcia};
+    
+    sort(ucenici.begin(), ucenici.end());
+    
+    vector<Ucenik>::iterator it;
+    for(it=ucenici.begin(); it!=ucenici.end(); ++it)
+        cout << *it << endl;
+    return 0;
+}
+\end{minted}
+U gornjem smo zbog upotrebe funkcije \texttt{std::sort}
+(pri čemu nije potrebno pisati \texttt{std::} ispred \texttt{sort} zbog upotrebe \texttt{using}-a)
+uključili \texttt{algorithm} zaglavlje.
+Nakon konstruiranja četiri objekta tipa \texttt{Ucenik},
+dodali smo ih u vektor učenika \texttt{ucenici}
+pomoću incijalizacijske liste vektora.
+Funkcija \texttt{sort} koristit će definirani operator \texttt{<} na klasi \texttt{Ucenik}
+kako bi ih sortirala uzlazno obzirom na taj uređaj \texttt{<}.
+Naposljetku ispišemo sve elemente tog (sortiranog) vektora.
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        Kako biste izmijenili rješenje prethodnog zadatka tako da se dobije silazno
+        sortiranje učenika prema imenu?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+Ponekad želimo sortirati objekte spremnika, poput vektora, prema kriteriju različitom od onoga definiranog operatorom \texttt{<}. 
+U takvim situacijama funkciji \texttt{std::sort} možemo proslijediti dodatni argument.
+Taj dodatni argument je \textbf{komparator},
+tj.\ funkcija koja prima dva objekta te vraća vrijednost tipa \texttt{bool}.
+Pritom vraća \texttt{true} ako i samo ako se objekt proslijeđen kao prvi argument funkcije 
+treba nalaziti ispred drugoga u sortiranom poretku.
+\medskip
+
+Formalno govoreći, 
+funkciji \texttt{std::sort} kao treći argument ne prosljeđujemo funkciju
+nego pokazivač na funkciju (to je zapravo ime te funkcije).
+Primjerice, ako funkcija imena \texttt{usporedi} za dva objekta tipa klase \texttt{Ucenik}
+vraća podatak tipa \texttt{bool},
+možemo ju iskoristiti u pozivu funkcije \texttt{std::sort} na sljedeći način:
+\begin{minted}{C++}
+std::sort(ucenici.begin(), ucenici.end(), usporedi);
+\end{minted}
+kako bismo sortirali vektor \texttt{ucenici} čiji su elementi tipa klase \texttt{Ucenik}.
+
+
+\begin{zadatak}
+Napišite program koji vektor čiji su objekti tipa klase \texttt{Ucenik}
+(iz zadatka \ref{zad:sortiranje-operator})
+sortira silazno prema imenu učenika.
+Program treba koristiti \texttt{std::sort} funkciju s odgovarajućim komparatorom.
+Program spremite u datoteku \texttt{main.cpp}. Napravite i vektor s nekoliko učenika za testiranje.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Koristit ćemo funkciju \texttt{std::sort}, pri čemu ćemo kao treći argument
+    funkciji proslijediti komparator \texttt{usporedba}
+    koji za dva učenika vraća \texttt{true} ako i samo ako je ime prvog učenika
+    abecedno nakon imena drugog učenika
+    (jer je to poredak koji želimo postići u sortiranom spremniku).
+    Sav kod spremit ćemo u \textit{main.cpp} datoteku:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include "Ucenik.h"
+
+using namespace std;
+
+bool usporedba(const Ucenik& prvi, const Ucenik& drugi) {
+    return prvi.ime > drugi.ime;
+}
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+    vector<Ucenik> ucenici{john, jane, smith, garcia};
+    
+    sort(ucenici.begin(), ucenici.end(), usporedba);
+    
+    vector<Ucenik>::iterator it;
+    for(it=ucenici.begin(); it!=ucenici.end(); ++it)
+        cout << *it << endl;
+    return 0;
+}
+\end{minted}
+
+Budući da funkcija \texttt{usporedba} pristupa privatnom članu \texttt{ime}, potrebno ju je u klasi \texttt{Ucenik}
+(u \textit{Ucenik.h} datoteci) deklarirati kao prijateljsku funkciju te klase:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+class Ucenik {
+friend bool usporedba(const Ucenik& prvi,
+                      const Ucenik& drugi);
+...
+};
+    \end{minted}
+\end{rjesenje}
+
+
+Osim komparatora, za definiranje kriterija sortiranja mogu se koristiti i funktori.
+Pritom operator \texttt{()} koji je funkcija članica funktora
+treba ,,oponašati komparator'', tj.\ za dva objekta vraćati podatak tipa \texttt{bool}
+(i to \texttt{true} ako i samo ako bi u željenom sortiranom poretku prvi objekt
+trebao biti ispred drugoga).
+\medskip
+
+Što se terminologije tiče, funktor čiji operator \texttt{()}
+vraća podatak tipa \texttt{bool} nazivamo \textbf{predikatom}.
+Ako predikat ima dva argumenta
+(tj.\ ako njegov operator \texttt{()} ima dva argumenta)
+nazivamo ga \textbf{binarnim predikatom}, a ako ima jedan argument nazivamo ga
+\textbf{unarnim predikatom}.
+
+\begin{zadatak}
+Napišite program koji vektor čiji su objekti tipa klase \texttt{Ucenik}
+(iz zadatka \ref{zad:sortiranje-operator})
+sortira (uzlazno) prema prosjeku učenika.
+Program treba koristiti \texttt{std::sort} funkciju s odgovarajućim binarnim predikatom.
+Program spremite u \textit{main.cpp} datoteku. Napravite i vektor s nekoliko učenika za testiranje.
+\end{zadatak}
+
+\begin{rjesenje}
+Za traženo sortiranje potreban nam je binarni predikat koji za dva učenika
+vraća vrijednost \texttt{true} 
+ako i samo ako prvi učenik ima manji prosjek od drugog učenika
+(jer to je poredak koji u sortiranom vektoru učenika želimo postići).
+Traženi predikat bit će jednostavna struktura - imat će samo traženi operator \texttt{()}.
+Predikat ćemo dodati u \texttt{main.cpp} datoteku (obzirom da ga koristimo samo 
+u ovome programu za sortiranje konkretnog vektora učenika).
+Cjelokupan sadržaj \textit{main.cpp} datoteke je sljedeći:
+\begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include "Ucenik.h"
+
+using namespace std;
+
+struct PoProsjeku {
+    bool operator()(const Ucenik& a, const Ucenik& b) const {
+        return a.prosjek() < b.prosjek();
+    }
+};
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+    vector<Ucenik> ucenici{john, jane, smith, garcia};
+    
+    PoProsjeku prosj;
+    sort(ucenici.begin(), ucenici.end(), prosj);
+    
+    vector<Ucenik>::iterator it;
+    for(it=ucenici.begin(); it!=ucenici.end(); ++it)
+        cout << *it << endl;
+    return 0;
+}
+\end{minted}
+
+Objektu koji koristimo kao binarni predikat u gornjem kodu ne trebamo dati ime - 
+prema tome mogli smo umjesto 19.\ i 20.\ linije gornjeg koda napisati samo sljedeću liniju koda:
+\begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+sort(ucenici.begin(), ucenici.end(), PoProsjeku());
+\end{minted}
+\end{rjesenje}
+
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item 
+        Koja je prednost upotrebe strukture u odnosu na klasu za implementaciju
+        predikata \texttt{PoProsjeku} u rješenju prethodnog zadatka?
+        Kako bi izgledalo rješenje prethodnog zadatka kad bi \texttt{PoProsjek}
+        implementirali kao klasu (s operatorom \texttt{()} kao njegovom javnom metodom)?
+    \end{enumerate}
+\end{razmisljanje}
+
+
+\section{Upotreba vlastitih klasa u spremniku \texttt{std::set}}
+
+Već smo za spremnik \texttt{std::set} istaknuli da pohranjuje elemente tako da su sortirani i da se ne mogu pojaviti duplikati.
+Za ugrađene tipove (poput tipova \texttt{int}, \texttt{double} ili \texttt{string}) već je definiran
+operator \texttt{<} pomoću kojeg \texttt{std::set}
+određuje mjesto pojedinog elementa u sortiranom poretku.
+Međutim, za vlastite klase potrebno je definirati kako se dva objekta uspoređuju. 
+Najčešće se to radi implementacijom operatora \texttt{<} za te klase.
+Istaknimo i da spremniku \texttt{std::set} nije potreban operator
+\texttt{==} za provjeru duplikata obzirom da
+se koristi pravilo da su dva objekta \texttt{a} i \texttt{b}
+(tipa neke klase koja ima definiran operator \texttt{<})
+jednaka ako i samo ako vrijedi
+\begin{center}
+    \texttt{!(a < b) \&\& !(b < a)}.
+\end{center}
+
+Osim definiranja operatora \texttt{<} unutar klase čije objekte želimo staviti u spremnik \texttt{std::set},
+moguće je i kao parametar predloška \texttt{std::set}
+proslijediti binarni predikat koji definira kriterij usporedbe elemenata.
+Alternativno, moguće je kao drugi parametar predloška navesti tip pokazivača na funkciju, a ne samo ime funkcije
+(prisjetite se poglavlja o generičkom programiranju i eksplicitnom navođenju tipova pri upotrebi predloška klase).
+Prilikom stvaranja objekta takvog predloška \texttt{std::set}, funkcija tog tipa navodi
+se kao argument konstruktora.
+
+
+\begin{zadatak}\label{zad:skup-ucenika}
+Napišite program koji sadrži skup objekata tipa klase \texttt{Ucenik}
+(iz zadatka \ref{zad:sortiranje-operator}).
+Skup je sortiran (uzlazno) prema prosjeku učenika.
+\begin{itemize}
+    \item[(a)]
+    Riješite zadatak upotrebom odgovarajućeg binarnog predikata pri deklaraciji tog skupa.
+    \item[(b)]
+    Riješite zadatak upotrebom odgovarajuće funkcije za određivanje ispravnog poretka pri deklaraciji tog skupa.
+\end{itemize}
+Program spremite u \textit{main.cpp} datoteku.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    \begin{itemize}
+        \item[(a)]
+        Sadržaj \textit{main.cpp} datoteke:
+        \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+#include <algorithm>
+#include <iostream>
+#include <set>
+#include "Ucenik.h"
+
+using namespace std;
+
+struct PoProsjeku {
+    bool operator()(const Ucenik& a, 
+        const Ucenik& b) const {
+            return a.prosjek() < b.prosjek() ||
+             (a.prosjek()==b.prosjek() && a.ime<b.ime);
+    }
+};
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+    
+    set<Ucenik, PoProsjeku> ucenici {
+        john, jane, smith, garcia
+    };
+    
+    set<Ucenik>::iterator it;
+    for(it=ucenici.begin(); it!=ucenici.end(); ++it)
+        cout << *it << endl;
+    return 0;
+}
+        \end{minted}
+
+        Uočite da zato što iterator ne ovisi o načinu uspoređivanja elemenata u skupu, nego o tipu elemenata koji se nalaze u spremniku,
+        u deklaraciji iteratora \texttt{it} u gornjem kodu nismo morali navoditi naš predikat \texttt{PoProsjeku}.
+        \medskip
+        
+        Budući da u gornjem kodu koristimo privatan član \texttt{ime} klase \texttt{Ucenik}, potrebno je u klasu \texttt{Ucenik} 
+        (u \textit{Ucenik.h} datoteci)
+    dodati deklaraciju strukture \texttt{PoProsjeku} kao prijateljske strukture naše klase:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+class Ucenik {
+friend struct PoProsjeku;
+...
+};
+    \end{minted}
+
+    \item[(b)]
+    Kao u prethodnom podzadatku, ali umjesto definiranja strukture \texttt{PoProsjeku},
+    definiramo globalnu funkciju
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+bool usporedba(const Ucenik& a, const Ucenik& b) {
+    return a.prosjek() < b.prosjek() ||
+             (a.prosjek()==b.prosjek() && a.ime<b.ime);
+}
+    \end{minted}
+
+    Budući da u gornjem kodu koristimo privatan član \texttt{ime} klase \texttt{Ucenik}, potrebno je u klasu \texttt{Ucenik} 
+        (u \textit{Ucenik.h} datoteci)
+    dodati deklaraciju te funkcije \texttt{usporedba} kao prijateljske funkcije naše klase:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+class Ucenik {
+friend struct PoProsjeku;
+...
+};
+    \end{minted}
+    Sada skup \texttt{ucenici} definiramo u \texttt{main} funkciji ovako:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+set<Ucenik, bool(*)(const Ucenik&, const Ucenik&)>
+    ucenici(usporedba);
+    \end{minted}
+    \end{itemize}
+\end{rjesenje}
+
+
+\section{Generički algoritmi: iteratori i funktori}
+
+
+U rješenjima zadataka iz prethodnih cjelina
+možemo primijetiti da promjenom spremnika u koji spremamo objekte tipa
+korisnički definirane klase
+moramo u kodu promijeniti i deklaracije iteratora koje koristimo 
+za te spremnike.
+Primjerice, za klasu \texttt{Ucenik} u rješenju zadatka
+\ref{zad:sortiranje-operator} 
+koristili smo vektor \texttt{ucenici} 
+objekata tipa te klase i sljedeći kod za ispis elemenata tog vektora:
+
+\begin{minted}{C++}
+vector<Ucenik>::iterator it;
+for(it = ucenici.begin(); it != ucenici.end(); ++it)
+    cout << *it << endl;
+\end{minted}
+
+Zatim smo iste podatke u zadatku \ref{zad:skup-ucenika} pohranjivali u skup učenika (istog naziva \texttt{ucenici}). 
+Pri toj promjeni pokazalo se da je gotovo sav kôd ostao isti, ali smo morali mijenjati deklaraciju iteratora:
+
+\begin{minted}{C++}
+set<Ucenik>::iterator it;
+for(it = ucenici.begin(); it != ucenici.end(); ++it)
+    cout << *it << endl;
+\end{minted}
+
+Radi ponovne upotrebe koda, bilo bi korisno kôd za prolazak kroz sve elemente spremnika 
+izdvojiti u zasebnu funkciju.
+Kako bismo omogućili rad s iteratorima različitih spremnika, umjesto funkcije korisnije je napisati
+predložak funkcije.
+Tada kao parametar predloška možemo navesti prikladan tip iteratora.
+Budući da je predložak zamišljen za tip iteratora, prikladnije je koristiti opisniji naziv parametra
+poput naziva \texttt{Iter} umjesto općenitog naziva
+\texttt{T}, \texttt{Tip} i slično.
+Primjerice:
+\begin{minted}{C++}
+template<class Iter>
+void neka_funkcija(Iter pocetak, Iter kraj) {
+    for(Iter it = pocetak; it != kraj; ++it)
+        ...
+}
+\end{minted}
+
+Slično, možemo napisati predložak funkcije kojoj
+se može proslijediti funktor, u smislu objekta
+koji određuje što napraviti s pojedinim elementom spremnika.
+Primjerice,
+
+\begin{minted}{C++}
+template<class Iter, class Functor>
+void neka_funkcija(Iter pocetak, Iter kraj, Functor f) {
+    for(Iter it = pocetak; it != kraj; ++it)
+        f(*it);
+}
+\end{minted}
+
+\begin{zadatak}\label{zad:for-each}
+    Implementirajte generičku funkciju \texttt{for\_each} koja prima
+dva iteratora i funktor te primjenjuje zadani funktor na svaki
+element raspona određenog tim iteratorima.
+
+Napišite i testni program - koristite \texttt{vector<Ucenik>} i
+\texttt{set<Ucenik>}, pri čemu upotrijebite klasu \texttt{Ucenik} iz zadatka \ref{zad:sortiranje-operator}.
+Pomoću odgovarajućeg funktora svakom učeniku u vektoru dodajte
+ocjenu 5 iz predmeta \texttt{Biologija}. 
+Zatim pomoću drugog
+odgovarajućeg funktora i funkcije \texttt{for\_each} ispišite sve učenike iz
+vektora te iz skupa.
+Za ispis podataka o pojedinom učeniku upotrijebite nadograđeni operator \texttt{<\!<} za klasu \texttt{Ucenik}.
+\end{zadatak}
+
+
+\begin{rjesenje}
+Predložak funkcije \texttt{for\_each} prima kao argumente
+iterator \texttt{pocetak} na prvi element raspona,
+iterator \texttt{kraj} iza posljednjeg elementa raspona
+te (unarni) funktor \texttt{f} koji se izvršava nad svakim elementom raspona.
+\medskip
+
+
+Koristimo dva funktora - jedan \texttt{ocijeni\_ucenika}
+koja prima referencu na učenika i dodaje mu ocjenu \texttt{5} iz predmeta naziva \texttt{"Biologija"},
+te drugi (generički) funktor \texttt{pisac} koji ispisuje element na koji se primjenjuje.
+\medskip
+
+U glavnom programu (u \texttt{main} funkciji) primjenjujemo \texttt{for\_each} funkciju za primjenu funktora
+\texttt{ocijeni\_ucenika} odnosno \texttt{pisac}
+na čitav vektor učenika ili skup učenika s nekoliko objekata tipa \texttt{Ucenik}.
+\medskip
+
+Sadržaj \textit{main.cpp} datoteke s traženim kodom:
+\begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+#include <iostream>
+#include <set>
+#include <vector>
+#include "Ucenik.h"
+
+using namespace std;
+
+template<class Iter, class Functor>
+void for_each(Iter pocetak, Iter kraj, Functor f) {
+    for(Iter it = pocetak; it != kraj; ++it)
+        f(*it);
+}
+
+struct ocijeni_ucenika {
+    void operator()(Ucenik& ucenik) {
+        ucenik["Biologija"] += 5;
+    }
+};
+
+template<class T>
+struct pisac {
+    void operator()(const T& x) {
+        cout << x << endl;
+    }
+};
+
+int main(void) {
+    Ucenik john("John Doe"), jane("Jane Doe"),
+        smith("John Smith"), garcia("Ann Garcia");
+		
+    john["Geografija"] += 5;
+    (jane["Matematika"] += 5) += 4;
+    jane["Filozofija"] += 3;
+    jane["Geografija"] += 4;
+    smith["Matematika"] += 4;
+    smith["Fizika"] += 3;
+    garcia["Fizika"] += 5;
+
+    vector<Ucenik> vektor_ucenika {john, jane, smith, garcia};
+    set<Ucenik> skup_ucenika {john, jane, smith, garcia};
+
+    for_each(vektor_ucenika.begin(), vektor_ucenika.end(),
+        ocijeni_ucenika());
+    
+    cout << "Ispis elemenata vektora ucenika:" << endl;
+    for_each(vektor_ucenika.begin(), vektor_ucenika.end(),
+        pisac<Ucenik>());
+		
+    cout << "Ispis elemenata skupa ucenika:" << endl;
+    for_each(skup_ucenika.begin(), skup_ucenika.end(),
+        pisac<Ucenik>());
+    return 0;
+}
+\end{minted}
+\end{rjesenje}
+
+
+Generička funkcija \texttt{for\_each} s istom
+funkcionalnošću već postoji u zaglavlju \texttt{algorithm}.
+
+\begin{zadatak}
+    Nadopunite glavni program iz rješenja zadatka \ref{zad:for-each}
+    gdje rezultat dobiven vlastito implementiranom \texttt{for\_each} funkcijom 
+    uspoređujete 
+    s rezultatom dobivenim pomoću \texttt{for\_each}
+    funkcije iz zaglavlja \texttt{algorithm}.
+\end{zadatak}
+
+
+\begin{rjesenje}
+    Opisat ćemo samo promjene koje je potrebno napraviti
+    u \textit{main.cpp}
+    datoteci iz rješenja zadatka \ref{zad:for-each}.
+    \medskip
+
+    Kako bismo koristili funkciju \texttt{for\_each}
+    definiranu u \texttt{algorithm} 
+    zaglavlju, na početku \textit{main.cpp} datoteke uključimo tu datoteku zaglavlja:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+    #include <algorithm>
+    \end{minted}
+    Našu (globalnu) funkciju \texttt{for::each} pozivamo
+    upotrebom operatora dosega kao i za ostale globalne varijable, dok 
+    (standardnu) funkciju iz zaglavlja \texttt{algorithm}
+    pozivamo upotrebom operatora dosega i imeničkog prostora \texttt{std}.
+    Prema tome, primjerice,
+    za ispis elemenata skupa koristimo obje verzije (kako bi usporedili dobivene rezultate) ovako:
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+::for_each(skup_ucenika.begin(), skup_ucenika.end(),
+    pisac<Ucenik>());
+std::for_each(skup_ucenika.begin(), skup_ucenika.end(),
+    pisac<Ucenik>());
+    \end{minted}
+
+    Istaknimo ovdje da čak i u slučaju uklanjanja sljedeće linije iz koda
+    \begin{minted}[
+    linenos,
+    numbersep=5pt
+    ]{C++}
+    using namespace std;
+    \end{minted}
+    i dalje moramo pisati \texttt{::} ispred poziva naše funkcije \texttt{for\_each}.
+    Razlog je \textbf{pretraživanje ovisno o argumentima}
+    (engl.\ \textit{Argument-Dependent Lookup} ili kratko ADL).
+    Naime, radi se o pravilu prema kojem kompajler pri traženju odgovarajuće funkcije 
+    uzima u obzir i imeničke prostore povezane s tipovima argumenata funkcijskog poziva.
+    U našem primjeru, koristimo argumente povezane sa \texttt{std::set},
+    pa se prema tome i bez navedene linije, ime \texttt{for\_each} osim kao globalno, traži i unutar
+    \texttt{std} imeničkog prostora
+    (te prema tome imamo konflikt zbog postojanja funkcije tog prototipa i kao globalne i unutar \texttt{std} imeničkog prostora).
+\end{rjesenje}
+
+
+Generičke funkcije \texttt{for\_each} i \texttt{sort} nisu jedine koje su implementirane u STL-u.
+Popis često korištenih dajemo u dodatku ove skripte.
+\medskip
+
+Za kraj spomenimo da postoje i dva korisna binarna generička predikata u \texttt{std} imeničkom prostoru:
+\texttt{greater} i \texttt{less}:
+
+\begin{itemize}
+    \item 
+    \texttt{template<class T> struct greater}
+    - binarni generički predikat koji za dva objekta \texttt{a} i \texttt{b}
+    tipa \texttt{T} za koje je definiran operator \texttt{>} vraća podatak tipa \texttt{bool} ovisno o tome vrijedi li \texttt{a > b},
+
+    \item 
+    \texttt{template<class T> struct less}
+    - binarni generički predikat koji za dva objekta \texttt{a} i \texttt{b}
+    tipa \texttt{T} za koje je definiran operator \texttt{<} vraća podatak tipa \texttt{bool} ovisno o tome vrijedi li \texttt{a > b}.
+\end{itemize}
+
+Primjerice, možemo ih iskoristiti za skup podataka tipa \texttt{int} 
+koji je sortiran uzlazno (u donjem primjeru to je skup \texttt{S1})
+ili skup koji je sortiran silazno
+(u donjem primjeru to je skup \texttt{S2}):
+
+\begin{minted}{C++}
+set<int, less<int>> S1;
+set<int, greater<int>> S2;
+\end{minted}
