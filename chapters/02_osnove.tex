@@ -4,7 +4,31 @@
 %cin, cout, usporedba s printf i scanf
 
 \section{Using namespace std;}
-%cemu služi, 
+%cemu služi, zašto nije pametno
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Što će se dogoditi u donjem kodu ako pretpostavimo da \texttt{namespace std} sadrži svoju implementaciju funkcija \texttt{max}? Hoće li se program kompjalirati, i ako da, hoće li se pozvati naša funkcija \texttt{max} ili funkcija \texttt{max} iz \texttt{namespace std}?
+            \begin{minted}[
+                linenos,
+                numbersep=5pt
+            ]{C++}
+                #include <iostream>
+
+                using namespace std;
+                
+                int max(int a, int b){
+                    return (a > b? a: b);
+                }
+
+                int main(void){
+                    int a = 6, b = 7;
+                    cout << "max(" << a << ", " << b << ") = " << max(a,b);
+                    return 0;
+                }
+    \end{minted}
+        
+    \end{enumerate}
+\end{razmisljanje}
 
 \section{Deklaracija novih tipova podataka}
 Prisjetimo se, u C-u smo strukture deklarirali na sljedeći način:

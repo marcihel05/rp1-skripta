@@ -1,1 +1,153 @@
 \chapter{Klasa std::string}
+
+\begin{zadatak}
+    U zadatku~\ref{zad:student-dinamicki} C-ovske stringove zamijenite klasom \texttt{std::string}.
+\end{zadatak}
+
+\begin{rjesenje}
+    Datoteka \texttt{student.h}
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #pragma once
+        #include <string>
+
+        struct Student{
+            std::string ime, prezime, jmbag;
+            std::string *kolegiji;
+            unsigned *ocjene, n;
+
+            Student();
+            Student(std::string _ime, std::string _prezime, std::string _jmbag):
+
+            bool ocijeni(std::string kolegij, unsigned ocjena);
+            void info();
+
+            ~Student();
+        };
+    \end{minted}
+    Datoteka \texttt{student.cpp}
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #include <iostream>
+        #include <string>
+        #include "student.h"
+
+        using namespace std;
+    \end{minted}
+
+    Konstruktori:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Student::Student(){
+            kolegiji = ocjene = nullptr;
+            n = 0;
+        }
+
+        Student::Student(string _ime, string _prezime, string _jmbag){
+            ime = _ime;
+            prezime = _prezime;
+            jmbag = _jmbag;
+            kolegiji = ocjene = nullptr;
+            n = 0;
+        }
+    \end{minted}
+
+    Funkcija \texttt{ocijeni}
+
+     \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+         bool Student::ocijeni(string kolegij, unsigned ocjena){
+            int i;
+            for(i = 0; i < n; ++i){
+                if(!strcmp(kolegiji[i], kolegij)) break;
+            }
+            if(i < n){ // kolegij vec postoji
+                ocjene[i] = ocjena;
+                return false;
+            }
+
+            unsigned ocjene_kopija = new unsigned[n+1];
+            char *kolegiji_kopija = new char[21][n+1];
+            for(int i = 0; i < n; ++i){
+                ocjene_kopija[i] = ocjene[i];
+                strcpy(kolegiji_kopija[i], kolegiji[i]);
+            }
+            ocjene[n] = ocjena;
+            strcpy(novi_kolegiji[n], kolegij);
+            delete[] ocjene;
+            delete[] kolegiji;
+            ocjene = ocjene_kopija;
+            kolegiji = kolegiji_kopija;
+            ++n;
+            return true;
+        }
+    \end{minted}
+\end{rjesenje}
+
+\begin{zadatak} \label{zad:split-string}
+    Napišite glavni program koji učitava podatke o studentima u sljedećem obliku:
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        ime_1,prezime_1,jmbag_1
+        ime_2,prezime_2,jmbag_2
+        ...
+        ime_n,prezime_n,jmbag_n
+        kraj
+    \end{minted}
+    \texttt{ime\textunderscore i,prezime\textunderscore i,jmbag\textunderscore i} je jedan string! Ime, prezime i JMBAG studenta međusobno su odvojeni sa \mintinline{bash}{,} (zarezom).
+
+    Podaci se učitavaju sve dok se ne unese string \texttt{"kraj"} budući da broj studenata nije poznat unaprijed. Možete pretpostaviti da će stringovi biti u zadanom formatu.
+\end{zadatak}
+
+\begin{rjesenje}
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        #include <iostream>
+        #include "student.h"
+        #include "fakultet.h"
+
+        using namespace std;
+        
+        int main(void){
+            Fakultet F;
+            string str;
+            while(1){
+                cout << "Unesite podatke o studentu: ";
+                cin >> str;
+                if(str == "kraj") break;
+                string ime, prezime, jmbag;
+                ime = str.substr((str.find(",")));
+                str.erase(0, ime.size()+1);
+                prezime = str.substr((str.find(",")));
+                str.erase(0, prezime.size()+1);
+                jmbag = str;
+                F.dodajStudenta(ime, prezime, jmbag);
+            }
+            return 0;
+        }
+    \end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Riješite zadatak~\ref{zad:split-string} bez pretpostavke da je uneseni string u ispravnom formatu, odnosno dodajte provjeru ispravnosti.
+        \item Riješite zadatak~\ref{zad:split-string} uz pretpostavku da se svi podaci o studentima unose kao jedan string u sljedećem obliku:
+         \begin{center}
+             \texttt{ime\textunderscore 1,prezime\textunderscore 1,jmbag\textunderscore 1;...;ime\textunderscore n,prezime \textunderscore n,jmbag\textunderscore n}
+         \end{center}   
+         Dakle, podaci o različitim studentima odvojeni su sa \mintinline{bash}{;} (točka zarez).
+    \end{enumerate}
+\end{razmisljanje}

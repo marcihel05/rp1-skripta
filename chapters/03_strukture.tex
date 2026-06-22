@@ -80,7 +80,7 @@ Takav pristup je jednostavan, ali kod složenijih tipova podataka može biti nep
 Kako bi se osiguralo da je svaki objekt pravilno inicijaliziran odmah nakon stvaranja, C++ omogućuje definiranje posebnih funkcija koje se automatski pozivaju prilikom stvaranja i uništavanja objekata. Funkcija koja se poziva pri stvaranju objekta naziva se \textbf{konstruktor}, a funkcija koja se poziva pri njegovom uništavanju naziva \textbf{destruktor}.
 \medskip
 
-Konstruktori omogućuju inicijalizaciju članova objekta i uspostavljanje početnog stanja objekta. Konstruktor \textbf{ima isto ime kao i struktura} te \textbf{nema povratnih vrijednosti}.
+\textbf{Konstruktori} omogućuju inicijalizaciju članova objekta i uspostavljanje početnog stanja objekta. Konstruktor \textbf{ima isto ime kao i struktura} te \textbf{nema povratnih vrijednosti}.
 \begin{minted}{C++}
     struct Tocka{
         int x, y;
@@ -90,12 +90,89 @@ Konstruktori omogućuju inicijalizaciju članova objekta i uspostavljanje počet
         }
     };
 \end{minted}
+Ako razdvajamo sučelje od implementacije, tada u sučelju samo deklariramo konstruktor, a implementiramo ga zasebno. 
+
+\begin{minted}{C++}
+    // sucelje tocka.h
+    struct Tocka{
+        int x, y;
+
+        Tocka();
+    }
+
+    // implementacija tocka.cpp
+    Tocka::Tocka(){
+        x = y = 0;
+    }
+\end{minted}
+Konstruktor se automatski poziva kada deklariramo varijablu. Primjerice, konstruktor za strukturu \mintinline{C++}{Tocka} poziva se kad u programu napišemo \mintinline{C++}{Tocka P;}. Točka \texttt{P} je sada jednaka $(0,0)$.
+
+Konstruktor može primati parametre. Primjerice, konstruktor za strukturu \texttt{Tocka} može primati koordinate točke.
+\begin{minted}{C++}
+    struct Tocka{
+        int x, y;
+
+        Tocka(int _x, int _y){
+            x = _x;
+            y = _y;
+        }
+    };
+\end{minted}
+Tada objekt tipa \texttt{Tocka} inicijaliziramo u programu naredbom \mintinline{C++}{Tocka T(1, 2);} Ovo stvara točku čija prva koordinata je jednaka $1$, a druga koordinata je jednaka $2$.
+
+Konstruktor koji ne prima parametre naziva se \textbf{defaultni konstruktor}.
+
+Možemo čak implementirati i više različitih konstruktora. Na primjer, možemo imati jedan defaultni konstruktor te jedan ili više konstruktora koji primaju parametre.
+\begin{minted}{C++}
+    struct Tocka{
+        int x, y;
+
+        Tocka(){
+            x = y = 0;
+        }
+        Tocka(int _x, int _y){
+            x = _x;
+            y = _y;
+        }
+    };
+\end{minted}
+Sada objekt tipa \texttt{Tocka} možemo stvoriti na dva načina:
+
+\begin{minted}{C++}
+    Tocka P;
+    Tocka Q(6, 7);
+\end{minted}
+
+Prva linija poziva defaultni konstruktor koji stvara točku $(0,0)$. Druga linija poziva konstruktor koji prima dva parametra te stvara točku $(6, 7)$.
+Prisjetimo se primjera iz prethodne točke. Struktura \texttt{Tocka} nije imala ni jedan konstruktor no svejedno smo mogli deklarirati objekt tog tipa naredbom \mintinline{C++}{Tocka P;}. U slučaju kada sami ne implementiramo konstruktor, kompajlet stvara defaultni konstruktor koji ne radi ništa. 
+Međutim, čim sami implementiramo neki konstruktor, kompajler neće stvoriti defaultni konstruktor.
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Pretpostavimo da struktura \texttt{Tocka} ima sljedeću definiciju.
+            \begin{minted}[
+                linenos,
+                numbersep=5pt
+            ]{C++}
+                struct Tocka {
+                    double x, y;
+
+                    Tocka(double _x, double _y){
+                        x = _x;
+                        y = _y;
+                    }
+                };
+            \end{minted}
+            Što će se dogoditi ako u glavnom programu napišemo naredbu \mintinline{C++}{Tocka P;}?
+    \end{enumerate}
+\end{razmisljanje}
+
+
 \medskip
 
-Destruktori služe za oslobađanje resursa i izvođenje završnih radnji prije nego što objekt prestane postojati. 
-%Iako su kod jednostavnih struktura njihove mogućnosti na prvi pogled skromne, konstruktori i destruktori predstavljaju jedan od temeljnih mehanizama objektno orijentiranog programiranja te imaju ključnu ulogu u upravljanju životnim ciklusom objekata.
+\textbf{Destruktori} služe za izvođenje završnih radnji prije nego što objekt prestane postojati. Primjer jedna takve radnje je oslobađanje alocirane memorije. Destruktor je funkcija čije ima je \textbf{jednako imenu strukture ispred kojeg dodajemo znak \mintinline{bash}{~} (tilda)}. 
+Kao i konstruktor, ni destruktor \textbf{nema povratnu vrijednost}. Destruktor se automatski sam poziva kada objekt nestaje, čak i ako ga nisamo sami implementirali. U tom slučaju kompajler stvara destruktor koji ne radi ništa. Za razliku od konstruktora, destruktor \textbf{ne može primati parametre}!
 
-%U ovom ćemo poglavlju upoznati sintaksu konstruktora i destruktora te proučiti kada se oni automatski pozivaju i kako ih možemo koristiti za sigurniju i pregledniju organizaciju programa.
 \begin{zadatak}\label{zad:student-konstruktor}
     Strukturi \texttt{Student} iz zadatka~\ref{zad:student-funkcije-unutar} dodajte konstruktor bez parametra te konstruktor koji prima ime, prezime i JMBAG studenta. 
     Implementirajte i destruktor koji na ekran ispisuje vrijednosti svih varijabli strukture.
@@ -161,7 +238,32 @@ Destruktori služe za oslobađanje resursa i izvođenje završnih radnji prije n
 \end{rjesenje}
 
 \section{Dinamička alokacija memorije}
-\begin{zadatak}
+Prisjetimo se dinamičkog upravljanja memorijom u C-u. Kako bismo alocirali, odnosno zauzeli memoriju, koristili smo funkciju \texttt{malloc}. Za realokaciju memorije koristili smo funkciju \texttt{realloc}, dok smo za dealokaciju, odnosno oslobađenje memorije koristili funkciju \texttt{free}. Sve funkciju dio su zaglavlja \texttt{<stdlib.h>}.
+Promotrimo sljedeći kod.
+\begin{minted}{C}
+    #include<stdlib.h>
+
+    int main(void){
+        int n = 7;
+        int *niz = (int*)malloc(n*sizeof(int));
+        for(int i = 0; i < n; ++i) niz[i] = i;
+        n = 9;
+        niz = (int*)realloc(niz, n*sizeof(int));
+        free(niz);
+        return 0;
+    }
+\end{minted}
+%opis koda
+
+Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u C++ programima (naravno uz uključivanje zaglavlja \texttt{<stdlib.h>}). Međutim, ove funkcije \textbf{ne pozivaju} konstruktore, odnosno destruktore.
+
+Iako C++ podržava funkcije za dinamičku alokaciju naslijeđene iz jezika C, u C++-u se za tu svrhu uobičajeno koriste operatori \texttt{new} i \texttt{delete}. Oni su posebno prilagođeni radu s objektima i korisnički definiranim tipovima podataka te se prirodno uklapaju u objektno orijentirani stil programiranja.
+
+Jedna od važnih razlika između pristupa u C-u i C++-u jest činjenica da operator \texttt{new}, osim što alocira memoriju, automatski poziva konstruktor objekta koji se stvara. Slično tome, operator \texttt{delete} prije oslobađanja memorije poziva destruktor objekta. Na taj način C++ osigurava da se objekti pravilno inicijaliziraju i uništavaju.
+
+Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno ne ukloni iz memorije. Zbog toga je programer i dalje odgovoran za pravilno upravljanje zauzetom memorijom. Ako se dinamički alocirani objekt ne oslobodi pomoću operatora \texttt{delete}, dolazi do curenja memorije (memory leak), odnosno nepotrebnog zauzimanja memorijskih resursa.
+
+\begin{zadatak}\label{zad:student-dinamicki}
     Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-konstruktor} tako da nema ograničenja na broj kolegija. Pobrinite se za ispravnu alokaciju i dealokaciju memorije. 
 \end{zadatak}
 
@@ -227,7 +329,7 @@ Destruktori služe za oslobađanje resursa i izvođenje završnih radnji prije n
         linenos,
         numbersep=5pt
     ]{C++}
-         Student::~Student(char kolegij[21], unsigned ocjena){
+         Student::~Student(){
             if(kolegiji != nullptr) delete[] kolegiji;
             if(ocjene != nullptr) delete[] ocjene;
         }
@@ -235,5 +337,66 @@ Destruktori služe za oslobađanje resursa i izvođenje završnih radnji prije n
 
 \end{rjesenje}
 
-Napomenimo još jednom važnost korištenja naredbi \texttt{new} i \texttt{delete} umjesto funkcija \texttt{malloc}, \texttt{realloc} i \texttt{free}.
+\begin{napomena}
+    Napomenimo još jednom važnost korištenja naredbi \texttt{new} i \texttt{delete} umjesto funkcija \texttt{malloc}, \texttt{realloc} i \texttt{free}.
+\end{napomena}
+
 %dodaj kompliciraniji primjer
+\begin{zadatak}
+    Implementirajte klasu \texttt{Fakultet} koja sadrži dinamički alocirano polje struktura \texttt{Student}. Struktura ima i funkciju
+    \begin{center}
+        \mintinline{C++}{bool dodajStudenta(char *ime, char *prezime, char *jmbag)}
+    \end{center}
+    koja prima ime, prezime i JMBAG nekog studenta te ga dodaje u polje \texttt{studenti}. Ako već postoji student sa zadanim JMBAGom, funkcija ne radi ništa te vraća \mintinline{C++}{false}. Ako je dodan novi student, funkcija vraća \mintinline{C++}{true}.
+
+    Dodajte i defaultni konstruktor i destruktor koji oslobađa zauzetu memoriju.
+\end{zadatak}
+
+\begin{rjesenje}
+     \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+         struct Fakultet{
+            Student *studenti;
+            int n;
+
+            Fakultet();
+            bool dodajStudenta(char *ime, char *prezime, char *jmbag);
+            ~Fakultet()
+         };
+    \end{minted}
+
+    \begin{minted}[
+        linenos,
+        numbersep=5pt
+    ]{C++}
+        Fakultet::Fakultet(){
+            n = 0;
+            studenti = nullptr;
+        }
+
+        bool Fakultet::dodajStudenta(char *ime, char *prezime, char *jmbag){
+            for(int i = 0; i < n; ++i){
+                if(!strcmp(studenti[i].jmbag, jmbag)) // student vec
+                    return false;                     // postoji
+            }
+            Student *studenti_kopija = new Student[n+1];
+            for(int i = 0; i < n; ++i)
+                studenti_kopija[i] = studenti[i];
+            studenti_kopija[n] = Student(ime, prezime, jmbag);
+            delete[] studenti;
+            studenti_kopija = studenti;
+        }
+
+        Fakultet::~Fakultet(){
+            if(studenti != nullptr) delete[] studenti;
+        }
+    \end{minted}
+\end{rjesenje}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Modificirajte prethodni zadataka da način da se memorija ne alocira svaki put kad se dodaje novi student, nego npr. svaki deseti put.
+    \end{enumerate}
+\end{razmisljanje}
