@@ -297,6 +297,7 @@ Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u
     Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno ne ukloni iz memorije. Zbog toga je programer i dalje odgovoran za pravilno upravljanje zauzetom memorijom. Ako se dinamički alocirani objekt ne oslobodi pomoću operatora \texttt{delete}, dolazi do curenja memorije (memory leak), odnosno nepotrebnog zauzimanja memorijskih resursa.
  \end{napomena}
 
+ Napomeni još i da C++ \texttt{nema} operator ni funkciju koja obavlja istu stvar kao funkcija \texttt{realloc}. Ako želimo realocirati memoriju, moramo koristiti kombinaciju operatora \texttt{new} i \texttt{delete}.
 
 \begin{zadatak}\label{zad:student-dinamicki}
     Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-konstruktor} tako da nema ograničenja na broj kolegija. Pobrinite se za ispravnu alokaciju i dealokaciju memorije. 
@@ -434,7 +435,29 @@ Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u
 
 \begin{razmisljanje}
     \begin{enumerate}
-        \item Modificirajte prethodni zadataka da način da se memorija ne alocira svaki put kad se dodaje novi student, nego npr. svaki deseti put.
-        \item %alociramo niz ako nije implementiran defaultni konstruktor
+        \item Modificirajte prethodni zadataka na način da se memorija ne alocira svaki put kad se dodaje novi student, nego npr.\ svaki deseti put.
+        \item Što će se dogoditi u sljedećem kodu ako za strukturu \texttt{Tocka} nije implementiran konstruktor bez parametara?
+                \begin{minted}[
+                    linenos,
+                    numbersep=5pt
+                ]{C++}
+                    int main(void){
+                        Tocka *niz_tocaka = new Tocka[10];
+                        delete[] niz_tocaka;
+                        return 0;
+                    }
+    \end{minted}
+
+        \item Što će se dogoditi u sljedećem kodu uz pretpostavku da je implementiran konstruktor bez parametara za strukturu \texttt{Tocka}?
+                \begin{minted}[
+                    linenos,
+                    numbersep=5pt
+                ]{C++}
+                    int main(void){
+                        Tocka *niz_tocaka = new Tocka[10];
+                        delete niz_tocaka;
+                        return 0;
+                    }
+    \end{minted}
     \end{enumerate}
 \end{razmisljanje}

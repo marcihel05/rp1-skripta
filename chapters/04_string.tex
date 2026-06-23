@@ -1,4 +1,38 @@
 \chapter{Klasa std::string}
+Do sada smo u našim programima koristili C-ovske stringove, odnosno nizove znakova (charova) koji na kraju imaju \texttt{'\textbackslash 0'} (nul-znak), a za rad s njima koristili smo funkcije iz zaglavlja \texttt{string.h} koje su primale stringove kao argument. 
+U slučaju C-ovskih stringova, mora voditi računa o veličini polja, pravilnoj alokaciji memorije te mogućim pogreškama poput prekoračenja granica niza pa vrlo lako dolazi do pogrešaka. 
+
+Kako bi se pojednostavio rad s tekstualnim podacima, C++ uvodi klasu \texttt{std::string} koja predstavlja stringove. Klasa \texttt{std::string} automatski upravlja memorijom te sadrži velik broj metoda za stvaranje, spajanje, uspoređivanje, pretraživanje i mijenjanje stringova. Zbog toga je u većini slučajeva preporučljivo koristiti \texttt{std::string} umjesto C-ovskih stringova.
+
+Objasnimo prvo znaćenje riječi klasa. \dots Klasama ćemo se detaljnije baviti u poglavlju \ref{}.
+
+U nastavku dajemo pregled nekih metoda klase \texttt{std::string}. Popis i opis svih metoda nalazi se \href{https://cplusplus.com/reference/string/string/}{ovdje}.
+
+Za korištenje klase \texttt{std::string} potrebno je uključiti zaglavlje \texttt{<string>}:
+\begin{minted}{C++}
+    #include <string>
+\end{minted}
+
+Pogledajmo prvo najčešće konstruktore.
+\begin{minted}{C++}
+    std::string S1;
+    std::string S2("Racunarski praktikum 1");
+    std::string S3(5, 'Z');
+\end{minted}
+Prva linija stvara prazan string, druga linija stvara string \texttt{"Racunarski praktikum 1"}, dok treća linija stvara string \texttt{"ZZZZZ"} (dakle, 5 string koji se sastoji od pet znakova \texttt{'Z'}).
+
+Ekvivalenstno drugoj liniji je 
+\begin{minted}{C++}
+    std::string S2;
+    S2 = std::string("Racunarski praktikum 1");
+\end{minted}
+te
+\begin{minted}{C++}
+    std::string S2 = "Racunarski praktikum 1";
+\end{minted}
+
+
+
 
 \begin{zadatak}
     U zadatku~\ref{zad:student-dinamicki} C-ovske stringove zamijenite klasom \texttt{std::string}.
@@ -68,7 +102,7 @@
          bool Student::ocijeni(string kolegij, unsigned ocjena){
             int i;
             for(i = 0; i < n; ++i){
-                if(!strcmp(kolegiji[i], kolegij)) break;
+                if(kolegiji[i] == kolegij) break;
             }
             if(i < n){ // kolegij vec postoji
                 ocjene[i] = ocjena;
@@ -79,10 +113,10 @@
             char *kolegiji_kopija = new char[21][n+1];
             for(int i = 0; i < n; ++i){
                 ocjene_kopija[i] = ocjene[i];
-                strcpy(kolegiji_kopija[i], kolegiji[i]);
+                kolegiji_kopija[i] = kolegiji[i];
             }
             ocjene[n] = ocjena;
-            strcpy(novi_kolegiji[n], kolegij);
+            novi_kolegiji[n] = kolegij;
             delete[] ocjene;
             delete[] kolegiji;
             ocjene = ocjene_kopija;
@@ -149,5 +183,13 @@
              \texttt{ime\textunderscore 1,prezime\textunderscore 1,jmbag\textunderscore 1;...;ime\textunderscore n,prezime \textunderscore n,jmbag\textunderscore n}
          \end{center}   
          Dakle, podaci o različitim studentima odvojeni su sa \mintinline{bash}{;} (točka zarez).
+         \item Implementirajte strukturu \texttt{MyString} koja ima dio funkcionalnosti klase \texttt{std::string}:
+                \begin{itemize}
+                    \item sve konstruktore koje smo spomenuli u ovom poglavlju
+                    \item funkcije \texttt{size}, \texttt{append}, \texttt{substr}, \texttt{find}
+                    \item umjesto \texttt{A = B} neka postoji funkcija \texttt{A.copy(B)}
+                    \item umjesto \texttt{A == B} neka postoji funkcija \texttt{A.isEqual(B)}
+                    \item umjesto \texttt{A < B} neka postoji funkcija \texttt{A.isLessThan(B)}
+                \end{itemize}
     \end{enumerate}
 \end{razmisljanje}
