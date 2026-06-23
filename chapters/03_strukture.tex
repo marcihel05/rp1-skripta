@@ -254,14 +254,17 @@ Promotrimo sljedeći kod.
     }
 \end{minted}
 %opis koda
+Prisjetimo se da smo u C-u mogli izostaviti eksplicitnu pretvorbu povratnih vrijednosti funkcija \texttt{malloc} i \texttt{realloc} (koje inače vraćaju pokazivač na \texttt{void}). Drugim riječima, ako gornji kod shvatimo kao kod u C-u, mogli bismo izostaviti \texttt{(int*)} ispred funkcija \texttt{malloc} i \texttt{realloc} u linijama 5 i 8.
 
-Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u C++ programima (uz uključivanje zaglavlja \texttt{<stdlib.h>}). Međutim, ove funkcije \textbf{ne pozivaju} konstruktore, odnosno destruktore.
+Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u C++ programima, uz razliku da je u C++u eksplicitna pretvorba povratnih vrijednosti funkcija \texttt{malloc} i \texttt{realloc} nužna, inače bismo dobili grešku prilikom kompajliranja programa.
 
- U C++-u se za dinamičko upravljanjem memorijom koriste operatori \texttt{new} i \texttt{delete}. Oni su posebno prilagođeni radu s objektima i korisnički definiranim tipovima podataka. 
+Međutim, ove funkcije \textbf{ne pozivaju} konstruktore, odnosno destruktore!
+
+U C++-u se za dinamičko upravljanjem memorijom koriste operatori \texttt{new} i \texttt{delete}. Oni su posebno prilagođeni radu s objektima i korisnički definiranim tipovima podataka. 
  
- Operator  \textbf{\texttt{new}} alocira memoriju za novi objekt te nakon toga poziva konstruktor koji stvara taj objekt. Slično, operator \textbf{\texttt{delete}} poziva destruktor objekta i nakon toga dealocira zauzetu memoriju. Na taj način C++ osigurava da se objekti pravilno inicijaliziraju i uništavaju.
+Operator  \textbf{\texttt{new}} alocira memoriju za novi objekt te nakon toga poziva konstruktor koji stvara taj objekt. Slično, operator \textbf{\texttt{delete}} poziva destruktor objekta i nakon toga dealocira zauzetu memoriju. Na taj način C++ osigurava da se objekti pravilno inicijaliziraju i uništavaju.
  
- Promortimo sljedeći kod.
+Promortimo sljedeći kod.
  
  \begin{minted}{C++}
     struct Tocka{

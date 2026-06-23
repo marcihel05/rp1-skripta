@@ -19,7 +19,7 @@ Pogledajmo prvo najčešće konstruktore.
     std::string S2("Racunarski praktikum 1");
     std::string S3(5, 'Z');
 \end{minted}
-Prva linija stvara prazan string, druga linija stvara string \texttt{"Racunarski praktikum 1"}, dok treća linija stvara string \texttt{"ZZZZZ"} (dakle, 5 string koji se sastoji od pet znakova \texttt{'Z'}).
+Prva linija stvara prazan string, druga linija stvara string \texttt{"Racunarski praktikum 1"}, dok treća linija stvara string \texttt{"ZZZZZ"} (dakle, string koji se sastoji od pet znakova \texttt{'Z'}).
 
 Ekvivalenstno drugoj liniji je 
 \begin{minted}{C++}
@@ -31,8 +31,37 @@ te
     std::string S2 = "Racunarski praktikum 1";
 \end{minted}
 
+Pojedinim znakovima u stringu pristupama pomoću uglatih zagrada (kao i u C-u):
 
+\begin{minted}{C++}
+    std::string s1("Racunarski praktikum 1");
+    char c = s1[0]; // sada je c = 'R'
+    s1[1] = 'e'; // sada je s1 = "Recunarski praktikum 1"
+\end{minted}
 
+Stringove kopiramo iz jednog u drugog pomoću \mintinline{bash}{=} (operator pridruživanja):
+\begin{minted}{C++}
+    std::string s1("Racunarski praktikum 1"), s2;
+    s2 = s1; // sada je s2 = "Racunarski praktikum 1"
+\end{minted}
+Prisjetimo se da na ovaj način nismo mogli kopirati stringove u C-u. Naime, stringovi u C-u su zapravo polja, odnosno pokazivači. Ako probamo kompajlirati:
+\begin{minted}{C++}
+    int main(void){
+        char s1[] = "Racunarski praktikum 1";
+        char s2[] = s1;
+        return 0;
+    } 
+\end{minted}
+kompajler bi javio sljedeću grešku: \textcolor{green}{TODO: kopiraj grešku iz terminala}
+
+Ako pak kompajliramo sljedeće:
+\begin{minted}{C++}
+    int main(void){
+        char *s1 = "Racunarski praktikum 1";
+        char *s2 = s1;
+        return 0;
+    } 
+\end{minted}
 
 \begin{zadatak}
     U zadatku~\ref{zad:student-dinamicki} C-ovske stringove zamijenite klasom \texttt{std::string}.
@@ -191,5 +220,6 @@ te
                     \item umjesto \texttt{A == B} neka postoji funkcija \texttt{A.isEqual(B)}
                     \item umjesto \texttt{A < B} neka postoji funkcija \texttt{A.isLessThan(B)}
                 \end{itemize}
+                Uputa: koristite funkcije iz zaglavlja \texttt{string.h}.
     \end{enumerate}
 \end{razmisljanje}
