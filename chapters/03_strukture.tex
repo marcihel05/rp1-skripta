@@ -31,7 +31,7 @@ Sadržaj datoteke \texttt{student.h} sada je sljedeći:
             char kolegiji[30][21];
             unsigned ocjene[30], n;
 
-            bool ocijeni(char kolegij[21], unsigned ocjena);
+            bool ocijeni(char kolegij[], unsigned ocjena);
             void info();
         };
     \end{minted}
@@ -47,7 +47,7 @@ Sadržaj datoteke \texttt{student.h} sada je sljedeći:
         #include <string.h>
         #include "student.h"
 
-        bool Student::ocijeni(char kolegij[21], unsigned ocjena){
+        bool Student::ocijeni(char kolegij[], unsigned ocjena){
             int i;
             for(i = 0; i < n; ++i){
                 if(!strcmp(kolegiji[i], kolegij)) break;
@@ -192,9 +192,9 @@ Kao i konstruktor, ni destruktor \textbf{nema povratnu vrijednost}. Destruktor s
             unsigned ocjene[30], n;
 
             Student();
-            Student(char _ime[21], char _prezime[21], char _jmbag[11]):
+            Student(char _ime[], char _prezime[], char _jmbag[]):
 
-            bool ocijeni(char kolegij[21], unsigned ocjena);
+            bool ocijeni(char kolegij[], unsigned ocjena);
             void info();
 
             ~Student();
@@ -217,7 +217,7 @@ Kao i konstruktor, ni destruktor \textbf{nema povratnu vrijednost}. Destruktor s
         linenos,
         numbersep=5pt
     ]{C++}
-        Student::Student(char _ime[21], char _prezime[21], char _jmbag[11]){
+        Student::Student(char _ime[], char _prezime[], char _jmbag[]){
             strcpy(ime, _ime);
             strcpy(prezime, _prezime);
             strcpy(jmbag, _jmbag);
@@ -301,6 +301,7 @@ Promortimo sljedeći kod.
  \end{napomena}
 
  Napomeni još i da C++ \texttt{nema} operator ni funkciju koja obavlja istu stvar kao funkcija \texttt{realloc}. Ako želimo realocirati memoriju, moramo koristiti kombinaciju operatora \texttt{new} i \texttt{delete}.
+\medskip
 
 \begin{zadatak}\label{zad:student-dinamicki}
     Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-konstruktor} tako da nema ograničenja na broj kolegija. Pobrinite se za ispravnu alokaciju i dealokaciju memorije. 
@@ -321,7 +322,7 @@ Promortimo sljedeći kod.
             kolegiji = ocjene = nullprt;
         }
 
-        Student::Student(char _ime[21], char _prezime[21], char _jmbag[11]){
+        Student::Student(char _ime[], char _prezime[], char _jmbag[]){
             strcpy(ime, _ime);
             strcpy(prezime, _prezime);
             strcpy(jmbag, _jmbag);
@@ -336,7 +337,7 @@ Promortimo sljedeći kod.
         linenos,
         numbersep=5pt
     ]{C++}
-         bool Student::ocijeni(char kolegij[21], unsigned ocjena){
+         bool Student::ocijeni(char kolegij[], unsigned ocjena){
             int i;
             for(i = 0; i < n; ++i){
                 if(!strcmp(kolegiji[i], kolegij)) break;
@@ -386,7 +387,7 @@ Promortimo sljedeći kod.
 \begin{zadatak}
     Implementirajte klasu \texttt{Fakultet} koja sadrži dinamički alocirano polje struktura \texttt{Student}. Struktura ima i funkciju
     \begin{center}
-        \mintinline{C++}{bool dodajStudenta(char *ime, char *prezime, char *jmbag)}
+        \mintinline{C++}{bool dodajStudenta(char ime[], char prezime[], char jmbag[])}
     \end{center}
     koja prima ime, prezime i JMBAG nekog studenta te ga dodaje u polje \texttt{studenti}. Ako već postoji student sa zadanim JMBAGom, funkcija ne radi ništa te vraća \mintinline{C++}{false}. Ako je dodan novi student, funkcija vraća \mintinline{C++}{true}.
 
@@ -403,7 +404,7 @@ Promortimo sljedeći kod.
             int n;
 
             Fakultet();
-            bool dodajStudenta(char *ime, char *prezime, char *jmbag);
+            bool dodajStudenta(char ime[], char prezime[], char jmbag[]);
             ~Fakultet()
          };
     \end{minted}
@@ -417,7 +418,7 @@ Promortimo sljedeći kod.
             studenti = nullptr;
         }
 
-        bool Fakultet::dodajStudenta(char *ime, char *prezime, char *jmbag){
+        bool Fakultet::dodajStudenta(char ime[], char prezime[], char jmbag[]){
             for(int i = 0; i < n; ++i){
                 if(!strcmp(studenti[i].jmbag, jmbag)) // student vec
                     return false;                     // postoji

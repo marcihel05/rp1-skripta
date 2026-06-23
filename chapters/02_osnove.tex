@@ -61,10 +61,10 @@ Nakon deklaracije strukture, možemo deklarirati objekt tog tipa, pokazivač na 
         tocka *PT = &P;
         tocka polje_tocaka[2] = {P, Q};
 
-        for(int i = 0 ; i < 2; ++i)
+        for(int i = 0 ; i < 2; ++i){
             cout << "(" << polje_tocaka[i].x << ", ";
             cout << polje_tocaka[i].y << ")\n";
-        
+        }
         return 0;
     }
 \end{minted}
@@ -120,7 +120,7 @@ Za sada ćemo sa strukturama u C++-u raditi na isti način kao i sa strukturama 
         linenos,
         numbersep=5pt
     ]{C++}
-        bool ocijeni(Student &S, char kolegij[31], unsigned ocjena){
+        bool ocijeni(Student &S, char kolegij[], unsigned ocjena){
             int i;
             for(i = 0; i < S->n; ++i){
                 if(!strcmp(S->kolegiji[i], kolegij)) break;
@@ -168,7 +168,6 @@ Za sada ćemo sa strukturama u C++-u raditi na isti način kao i sa strukturama 
                 ocijeni(&S, novi_kolegij, nova_ocjena); 
             }   
             info(S);
-
             return 0;
         }
     \end{minted}
@@ -266,14 +265,12 @@ Primjerice, datoteka \texttt{main.cpp} koja koristi sučelje \texttt{tocka.h} mo
         cout << "Tocka Q: "; ispisiTocku(Q); cout << endl;
         cout << "Udaljenost izmedju tocaka P i Q je ";
         cout << udaljenostTocaka(P,Q) << endl;
-
         return 0;
     }
 \end{minted}
 
 Prednost razdvajanja programa na sučelje, implementaciju i klijentski dio je u tome da tipove podataka i funkcije možemo koristi u više različitih programa bez da ih ponovo implementiramo. Dovoljno je samo promijeniti klijentski dio.
-
-
+\medskip
 
 \begin{zadatak}\label{zad:student-razdvojeno}
     Razdvojite program iz zadatka~\ref{zad:student-basic} na sučelje, implementaciju i klijentski dio.
@@ -293,7 +290,7 @@ Prednost razdvajanja programa na sučelje, implementaciju i klijentski dio je u 
             unsigned ocjene[30], n;
         };
 
-        bool ocijeni(Student &S, char kolegij[21], unsigned ocjena);
+        bool ocijeni(Student &S, char kolegij[], unsigned ocjena);
         void info(Student S);
     \end{minted}
 
@@ -306,7 +303,7 @@ Prednost razdvajanja programa na sučelje, implementaciju i klijentski dio je u 
         #include <string.h>
         #include "student.h"
 
-        bool ocijeni(Student &S, char kolegij[21], unsigned ocjena){
+        bool ocijeni(Student &S, char kolegij[], unsigned ocjena){
             int i;
             for(i = 0; i < S->n; ++i){
                 if(!strcmp(S->kolegiji[i], kolegij)) break;
@@ -359,7 +356,6 @@ Prednost razdvajanja programa na sučelje, implementaciju i klijentski dio je u 
             ocijeni(&S, novi_kolegij, nova_ocjena); 
         }
         info(S);
-
         return 0;
      }
     \end{minted}

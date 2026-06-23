@@ -39,6 +39,16 @@ Pojedinim znakovima u stringu pristupama pomoću uglatih zagrada (kao i u C-u):
     s1[1] = 'e'; // sada je s1 = "Recunarski praktikum 1"
 \end{minted}
 
+Stringove učitavamo operatorom \texttt{std::cin}, a ispisujemo ih operatorom \texttt{std::cout}.
+
+\begin{minted}{C++}
+    std::string S;
+    cin >> S;
+    cout << S;
+\end{minted}
+
+Napomenimo da objekte klase \texttt{std::string} (kao ni bilo koje druge strukture ili klase) ne možemo učitavati sa \texttt{scanf} i ispisivati sa \texttt{printf}!
+
 Stringove kopiramo iz jednog u drugog pomoću \mintinline{bash}{=} (operator pridruživanja):
 \begin{minted}{C++}
     std::string s1("Racunarski praktikum 1"), s2;
@@ -59,9 +69,57 @@ Ako pak kompajliramo sljedeće:
     int main(void){
         char *s1 = "Racunarski praktikum 1";
         char *s2 = s1;
+        s2[1] = 'e';
+        std::cout << s1; // ispisuje se "Recunarski praktikum"
         return 0;
     } 
 \end{minted}
+program bi se izvršio, međutim, u liniji 3 događa se kopiranje pokazivača. Sada \texttt{s1} i \texttt{s2} pokazuju na istu memorijsku lokaciju pa smo modificiranjem stringa \texttt{s2} modificirali i string \texttt{s1}. Stoga se u liniji 4 ispisuje \texttt{"Recunarski praktikum 1"} umjesto \texttt{"Racunarski praktikum 1"}.
+
+Jednakost stringova provjeravamo operatorom \mintinline{bash}{==}.
+\begin{minted}{C++}
+    std::string s1("nesto"), s2("drugo");
+    if(s1 == s2)
+        std::cout << "s1 i s2 su isti!\n";
+    else
+        std::cout << "s1 i s2 nisu isti!\n"; // ovo se ispisuje
+\end{minted}
+
+Nejednakost stringova provjeravamo operatorom \mintinline{bash}{!=}.
+\begin{minted}{C++}
+    std::string s1("nesto"), s2("jos nesto");
+    if(s1 != s2)
+        std::cout << "s1 i s2 nisu isti!\n"; // ovo se ispisuje
+    else
+        std::cout << "s1 i s2 su isti!\n"; 
+\end{minted}
+
+Stringove možemo uspoređivati operatorima \mintinline{bash}{<}, \mintinline{bash}{<=}, \mintinline{bash}{>} i \mintinline{bash}{>=}. Stringovi se uspoređuju leksikografski (po abecedi).
+
+\begin{minted}{C++}
+    std::string s1("nesto"), s2("jos nesto");
+    if(s1 < s2)
+        std::cout << "s1 je manji od s2\n";
+    if(s1 <= s2)
+        std::cout << "s1 je manji li jedanak od s2\n";
+    if(s1 > s2)
+        std::cout << "s1 je veci od s2\n"; // ovo se ispisuje
+    if(s1 >= s2)
+        std::cout << "s1 je veci ili jednak od s2\n";
+\end{minted}
+
+Napomenimo da u slučaju provjeravanja jednakosti, nejednakosti i uspoređivanja operator razlikujemo velika i mala slova! Dakle, stringovi \texttt{"Nesto"} i \texttt{"nesto"} nisu jednaki.
+
+\textcolor{green}{TODO: ASCII tablica}
+
+\begin{razmisljanje}
+    \begin{enumerate}
+        \item Koji string je "manji" (to jest, prije po abecedi), \texttt{"Nesto"} ili \texttt{"nesto"}?
+        \item Koji string je "manji", \texttt{"nesto"} ili \texttt{"nesto drugo"}?
+    \end{enumerate}
+\end{razmisljanje}
+
+\medskip
 
 \begin{zadatak}
     U zadatku~\ref{zad:student-dinamicki} C-ovske stringove zamijenite klasom \texttt{std::string}.
@@ -137,7 +195,6 @@ Ako pak kompajliramo sljedeće:
                 ocjene[i] = ocjena;
                 return false;
             }
-
             unsigned ocjene_kopija = new unsigned[n+1];
             char *kolegiji_kopija = new char[21][n+1];
             for(int i = 0; i < n; ++i){
