@@ -255,13 +255,48 @@ Promotrimo sljedeći kod.
 \end{minted}
 %opis koda
 
-Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u C++ programima (naravno uz uključivanje zaglavlja \texttt{<stdlib.h>}). Međutim, ove funkcije \textbf{ne pozivaju} konstruktore, odnosno destruktore.
+Funkcije \texttt{malloc}, \texttt{realloc} i \texttt{free} možemo koristiti i u C++ programima (uz uključivanje zaglavlja \texttt{<stdlib.h>}). Međutim, ove funkcije \textbf{ne pozivaju} konstruktore, odnosno destruktore.
 
-Iako C++ podržava funkcije za dinamičku alokaciju naslijeđene iz jezika C, u C++-u se za tu svrhu uobičajeno koriste operatori \texttt{new} i \texttt{delete}. Oni su posebno prilagođeni radu s objektima i korisnički definiranim tipovima podataka te se prirodno uklapaju u objektno orijentirani stil programiranja.
+ U C++-u se za dinamičko upravljanjem memorijom koriste operatori \texttt{new} i \texttt{delete}. Oni su posebno prilagođeni radu s objektima i korisnički definiranim tipovima podataka. 
+ 
+ Operator  \textbf{\texttt{new}} alocira memoriju za novi objekt te nakon toga poziva konstruktor koji stvara taj objekt. Slično, operator \textbf{\texttt{delete}} poziva destruktor objekta i nakon toga dealocira zauzetu memoriju. Na taj način C++ osigurava da se objekti pravilno inicijaliziraju i uništavaju.
+ 
+ Promortimo sljedeći kod.
+ 
+ \begin{minted}{C++}
+    struct Tocka{
+        double x, y;
+        Tocka(){ x = y = 0;}
+        Tocka(double _y, double _y){
+            x = _x; y = _y;
+        }
+    };
 
-Jedna od važnih razlika između pristupa u C-u i C++-u jest činjenica da operator \texttt{new}, osim što alocira memoriju, automatski poziva konstruktor objekta koji se stvara. Slično tome, operator \texttt{delete} prije oslobađanja memorije poziva destruktor objekta. Na taj način C++ osigurava da se objekti pravilno inicijaliziraju i uništavaju.
+    int main(void){
+        Tocka *P = new Tocka;
+        Tocka *Q = new Tocka(6, 7);
+        Tocka *niz_tocaka = new Tocka[5];
 
-Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno ne ukloni iz memorije. Zbog toga je programer i dalje odgovoran za pravilno upravljanje zauzetom memorijom. Ako se dinamički alocirani objekt ne oslobodi pomoću operatora \texttt{delete}, dolazi do curenja memorije (memory leak), odnosno nepotrebnog zauzimanja memorijskih resursa.
+        delete P; delete Q;
+        delete[] niz_tocaka;
+        return 0;
+    }
+ \end{minted}
+ 
+ Linija 10 alocira memoriju za jedan objekt tipa \texttt{Tocka}, sprema adresu alocirane memorijske lokacije u varijablu \texttt{P} te \textbf{poziva konstruktor bez parametra} koji stvara točku $(0,0)$.
+
+ Slično, linija 11 alocira memoriju za jedan objekt tipa \texttt{Tocka}, sprema adresu alocirane memorijske lokacije u varijablu \texttt{Q} te \textbf{poziva konstruktor koji prima dva parametra} i stvara točku $(6, 7)$.
+
+ Linija 12 alocira memoriju za pet objekata tipa \texttt{Tocka}, sprema adresu memorijske lokacije prvog objekta (tj.\ objekta \texttt{niz\textunderscore tocaka[0]}) te za \textbf{svaki} od pet objekata \textbf{poziva konstruktor bez parametra}. U slučaju alokacije memorije za više od jednog objekta nije moguće pozvati konstruktor koji prima parametre!
+ 
+ Linija 14 poziva destruktore za objekte na adresama \texttt{P} i \texttt{Q} te oslobađa zauzetu memoriju na adresama \texttt{P} i \texttt{Q}.
+
+ Linija 15 poziva destruktore za svih pet objekata u nizu \texttt{niz\textunderscore tocaka} te oslobađa svu zauzetu memoriju. Primijetite da u slučaju pozivanja operatora \texttt{delete} na dinamički alciranom nizu pišemo \texttt{delete[] niz;} umjesto \texttt{delete niz;}!
+
+ \begin{napomena}
+    Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno ne ukloni iz memorije. Zbog toga je programer i dalje odgovoran za pravilno upravljanje zauzetom memorijom. Ako se dinamički alocirani objekt ne oslobodi pomoću operatora \texttt{delete}, dolazi do curenja memorije (memory leak), odnosno nepotrebnog zauzimanja memorijskih resursa.
+ \end{napomena}
+
 
 \begin{zadatak}\label{zad:student-dinamicki}
     Modificirajte strukturu \texttt{Student} iz zadatka~\ref{zad:student-konstruktor} tako da nema ograničenja na broj kolegija. Pobrinite se za ispravnu alokaciju i dealokaciju memorije. 
@@ -339,6 +374,8 @@ Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno
 
 \begin{napomena}
     Napomenimo još jednom važnost korištenja naredbi \texttt{new} i \texttt{delete} umjesto funkcija \texttt{malloc}, \texttt{realloc} i \texttt{free}.
+
+    \dots
 \end{napomena}
 
 %dodaj kompliciraniji primjer
@@ -398,5 +435,6 @@ Kao i u C-u, dinamički alocirani objekti postoje sve dok ih program eksplicitno
 \begin{razmisljanje}
     \begin{enumerate}
         \item Modificirajte prethodni zadataka da način da se memorija ne alocira svaki put kad se dodaje novi student, nego npr. svaki deseti put.
+        \item %alociramo niz ako nije implementiran defaultni konstruktor
     \end{enumerate}
 \end{razmisljanje}
