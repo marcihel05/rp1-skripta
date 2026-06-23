@@ -113,7 +113,7 @@ kompajler će javiti grešku da klasa \texttt{Klasa} nema člana s imenom \textt
 \medskip
 
 Deklaracija prijateljske funkcije može se nalaziti u bilo kojem dijelu klase, 
-budući da na njih ne utječe kontrola pristupa
+budući da na prijateljske funkcije ne utječe kontrola pristupa
 (tj.\ modifikatori \texttt{public}, \texttt{private} i \texttt{protected}).
 
 \begin{zadatak}\label{zad:klijent-friend}
@@ -125,8 +125,8 @@ budući da na njih ne utječe kontrola pristupa
         \texttt{bool provjera\_uvjeta(double rata, Klijent\& k)}
     \end{center}
     koja vraća \texttt{true} ako i samo ako klijent \texttt{k} 
-    može podignuti u toj banci kredit s ratom koja iznosi \texttt{rata} eura.
-    Klijent može podignuti s tim iznosom rate ako
+    može podignuti u toj banci kredit s mjesečnom ratom od \texttt{rata} eura.
+    Klijent može podignuti kredit s tim iznosom mjesečne rate ako
     mu iznos te rate iznosi najviše 45\% prosječnog primanja.
     \medskip
 
@@ -257,7 +257,7 @@ klasi \texttt{Banka}.
 Klasa \texttt{Banka} također nije prijateljska
 klasama koje nasljeđuju klasu \texttt{Racun}.
 Nadalje,
-ako je neka klasa prijateljska klasi \texttt{Banka},
+ako je neka klasa prijateljska klasa klasi \texttt{Banka},
 ona nije prijateljska klasa klasi \texttt{Racun}.
 
 
@@ -267,7 +267,7 @@ ona nije prijateljska klasa klasi \texttt{Racun}.
     o glavnici (tj.\ iznosu kredita u eurima),
     godišnjoj kamatnoj stopi (izraženoj u postocima)
     i roku otplate (u mjesecima).
-    Konstruktor treba primati vrijednosti za 
+    Konstruktor treba primiti vrijednosti za 
     ta tri podatka te njima inicijalizirati objekt.
     Dodajte klasi metodu \texttt{mjesecna\_rata}
     koja ne prima dodatne argumente, nego samo izračunava i vraća 
@@ -286,7 +286,7 @@ ona nije prijateljska klasa klasi \texttt{Racun}.
     (iz zadatka \ref{zad:klijent-friend})
     provjerava njegovu kreditnu sposobnost,
     tj.\ može li taj klijent dići taj kredit
-    (pri čemu je jedini uvjet obzirom na primanja i iznos rate kredita opisan u zadatku \ref{zad:klijent-friend}).
+    (gdje je jedini uvjet vezan uz primanja i iznos rate kredita opisan u zadatku \ref{zad:klijent-friend}).
     Navedena metoda mora koristiti metode klase \texttt{Klijent},
     pri čemu joj se to mora omogućiti upotrebom \texttt{friend} deklaracije odgovarajuće klase.
     \medskip
@@ -445,7 +445,7 @@ Međutim, to radi samo ukoliko koristimo u klasi \texttt{Profesor}
 pokazivače ili reference na objekte tipa klase \texttt{Kolegij},
 te ne koristimo članove klase \texttt{Kolegij}.
 Primjerice, sljedeće bi bilo neispravno
-(budući da deklaracija unaprijed ne daje informaciju o tome koje funkcije članice klasa \texttt{Kolegij} sadrži):
+(budući da deklaracija unaprijed ne daje informaciju o tome koje funkcije članice sadrži klasa \texttt{Kolegij}):
 \begin{minted}{C++}
 class Kolegij; // deklaracija unaprijed klase Kolegij
 class Profesor {
@@ -495,8 +495,8 @@ potrebno je u datoteku \textit{Klijent.h} dodati
 No, kako bismo sada izbjegli pojavu kružne ovisnosti
 (budući da datoteka \textit{Kredit.h} uključuje upravo izmijenjenu
 \textit{Klijent.h} datoteku),
-u datoteci \textit{Klijent.h} zamijenimo
-uključivanje datoteke \texttt{Kredit.h} sa deklaracijom unaprijed klase \texttt{Kredit}:
+u datoteci \textit{Kredit.h} zamijenimo
+uključivanje datoteke \texttt{Klijent.h} sa deklaracijom unaprijed klase \texttt{Klijent}:
 \begin{minted}[
         linenos,
         numbersep=5pt
@@ -625,7 +625,7 @@ Nadogradnjom samo definiramo kako će postojeći operatori djelovati nad objekti
 \medskip
 
 Općenito, nadograđeni operator implementira se kao funkcija čije je ime oblika \texttt{operatorX}, 
-pri čemu je \texttt{X} simbol operatora koji nadograđujemo.
+gdje je \texttt{X} simbol operatora koji nadograđujemo.
 Broj i tip operanada, kao i tip povratne vrijednosti,
 ovisi o operatoru \texttt{X} koji nadograđujemo.
 
@@ -825,7 +825,7 @@ Operatori za zbrajanje, oduzimanje, množenje, dijeljenje i modulo (\texttt{+}, 
     s desne strane matricu.
     Tako da će operator u ovom slučaju imati kao prvi argument realan broj tipa \texttt{double}, a kao drugi argument matricu.
     Operator ne mijenja niti realan broj niti matricu,
-    a rezultat je nova matrica koju će funkcija vratiti.
+    a rezultat je nova matrica koju funkcija vraća.
     \medskip
 
     Prema tome, u datoteku \texttt{Matrica.cpp} dodajemo 
@@ -930,7 +930,7 @@ obično se svodi na
 provjeru jesu li odgovarajući dijelovi objekata tipa te klase jednaki.
 Također, korisnik u slučaju da je nadograđen operator \texttt{==}
 obično očekuje da je nadograđen i operator \texttt{!=}
-(pri čemu se on definira pomoću tog, već nadograđenog, operatora \texttt{==}).
+(gdje se on definira pomoću tog, već nadograđenog, operatora \texttt{==}).
 Slično se često očekuje da definicije operatora 
 \texttt{<}, \texttt{<=}, \texttt{>} i \texttt{>=}
 budu konzistentne međusobno i s definicijama operatora \texttt{==} i \texttt{!=}.
@@ -992,7 +992,7 @@ bool operator!=(const Matrica &lm, const Matrica &dm) {
 }
     \end{minted}
 
-Kako te funkcije koriste privatne članove klase \texttt{Matrica},
+Budući da te funkcije koriste privatne članove klase \texttt{Matrica},
 deklariramo ih u toj klasi (u \textit{Matrica.h} datoteci) kao prijateljske funkcije te klase:
 \begin{minted}[
         linenos,
@@ -1071,12 +1071,12 @@ public:
 };
     \end{minted}
 
-    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članica klase \texttt{Matrica}.
+    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članice klase \texttt{Matrica}.
     Pritom prvo provjerimo za slučaj \texttt{A = A},
     je li objekt s lijeve strane (spremljen na adresi \texttt{this})
     isti kao i objekt
     na desnoj strani znaka \texttt{=}
-    (prema tome na istoj adresi kao i \texttt{this}).
+    (prema tome, na istoj adresi kao i \texttt{this}).
     Ako je to slučaj (tj.\ \texttt{A = A}),
     operator pridruživanja \texttt{=} zapravo ne treba raditi ništa.
     Naime, bez takve provjere bi operator pridruživanja \texttt{=} u slučaju \texttt{A = A}
@@ -1185,7 +1185,7 @@ public:
 ...
 };
     \end{minted}
-    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članica klase \texttt{Matrica}.
+    U datoteku \textit{Matrica.cpp} dodajemo implementaciju te funkcije članice klase \texttt{Matrica}.
     Elementima matrice čija je to funkcija članica (tj.\ 
     matrici s lijeve strane operatora \texttt{+=}),
     dodajemo odgovarajuće elemente matrice s desne strane tog operatora
@@ -1317,7 +1317,7 @@ ne smije mijenjati budući da je označen kao \texttt{const}).
 
 \begin{rjesenje}
     Budući da će obje verzije nadograđenog operatora
-    indeksiranja biti funkcije članica klase \texttt{Matrica}, dodajemo
+    indeksiranja biti funkcije članice klase \texttt{Matrica}, dodajemo
     njihove deklaracije u tu klasu (u datoteci \textit{Matrica.h}):
 
     \begin{minted}[
@@ -1422,7 +1422,7 @@ Operator \texttt{()} u C++ programskom jeziku mora biti implementiran kao funkci
     Pretvorite klasu \texttt{Matrica} iz zadatka \ref{zad:matrica-indeksiranje} u funktor.
     Pritom operator \texttt{()} te klase
     prima dva parametra tipa \texttt{unsigned}
-    koji predstavljaju broj retka odnosno broj stupca u matrici (standardno,
+    koji predstavljaju broj retka, odnosno broj stupca u matrici (standardno,
     retke i stupce brojimo od $0$).
     Kao rezultat vraća se referenca na element matrice u tom retku i stupcu kako bi se njegova vrijednost mogla mijenjati. 
     Napišite i \texttt{const} verziju koja omogućuje samo čitanje tog elementa.
@@ -1447,7 +1447,7 @@ Operator \texttt{()} u C++ programskom jeziku mora biti implementiran kao funkci
 
 \begin{rjesenje}
     Budući da obje verzije nadograđenog operatora
-    \texttt{()} moraju biti funkcije članica klase \texttt{Matrica}, dodajemo
+    \texttt{()} moraju biti funkcije članice klase \texttt{Matrica}, dodajemo
     njihove deklaracije u tu klasu (u datoteci \textit{Matrica.h}):
 
     \begin{minted}[
@@ -1568,7 +1568,7 @@ koji se ne koristi u implementaciji tog operatora. Prilikom korištenja tog oper
 
 \begin{rjesenje}
     Obje verzije nadograđenog operatora
-    inkrementiranja implementirat ćemo kao funkcije članica klase \texttt{Matrica}.
+    inkrementiranja implementirat ćemo kao funkcije članice klase \texttt{Matrica}.
     Dodajemo
     njihove deklaracije u tu klasu (u datoteci \textit{Matrica.h}):
 
